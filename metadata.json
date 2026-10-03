@@ -1,0 +1,8 @@
+{
+  "name": "YT Market",
+  "description": "Premium marketplace for buying and selling YouTube channels and social media assets with secure escrow and handover protocol.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

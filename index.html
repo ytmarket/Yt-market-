@@ -1,0 +1,2458 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Market - Premium Channels</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icon-192.png">
+  <meta name="theme-color" content="#4f46e5">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .hidden { display: none !important; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+      50% { box-shadow: 0 0 20px 5px rgba(79, 70, 229, 0.2); }
+    }
+    .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+    
+    button:active { transform: scale(0.96); transition: 0.1s; }
+    .card-hover:hover { transform: translateY(-4px); border-color: rgba(99, 102, 241, 0.4); background: rgba(255,255,255,0.03); }
+    
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
+    .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
+
+    .text-3d {
+      color: #ef4444;
+      text-shadow: 
+        0px 1px 0px #991b1b,
+        0px 2px 0px #991b1b,
+        0px 3px 0px #7f1d1d,
+        0px 4px 0px #7f1d1d,
+        0px 5px 0px #450a0a,
+        0px 15px 20px rgba(0, 0, 0, 0.9);
+      transform: perspective(300px) rotateX(10deg);
+      display: inline-block;
+    }
+    
+    .text-3d-subtle {
+      color: #f3f4f6;
+      text-shadow: 
+        0px 1px 0px #d1d5db,
+        0px 2px 0px #9ca3af,
+        0px 3px 0px #6b7280,
+        0px 4px 0px #4b5563,
+        0px 15px 20px rgba(0, 0, 0, 0.9);
+      transform: perspective(300px) rotateX(10deg);
+      display: inline-block;
+    }
+
+    @keyframes spinY {
+      from { transform: perspective(400px) rotateY(0deg); }
+      to { transform: perspective(400px) rotateY(360deg); }
+    }
+    .animate-spin-3d {
+      display: inline-block;
+      animation: spinY 4s linear infinite;
+      transform-style: preserve-3d;
+    }
+    .text-3d-nav {
+      color: #38bdf8;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 
+        0px 1px 0px #0284c7,
+        0px 2px 0px #0369a1,
+        0px 3px 0px #075985,
+        0px 5px 8px rgba(0, 0, 0, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-[#0a0a0a] text-white min-h-screen pb-20 overflow-x-hidden transition-colors duration-300">
+
+  <!-- Network Offline Overlay -->
+  <div id="offline-screen" class="fixed inset-0 bg-[#0a0a0a]/95 backdrop-blur-md z-[110] hidden flex flex-col items-center justify-center p-6 text-center">
+    <div class="w-24 h-24 bg-red-600/10 border border-red-500/20 rounded-full flex items-center justify-center mb-8 text-red-500 animate-pulse">
+      <i data-lucide="wifi-off" class="w-12 h-12"></i>
+    </div>
+    <h1 class="text-4xl md:text-5xl font-black mb-4 uppercase tracking-wider text-3d leading-tight" data-hi="कोई इंटरनेट नहीं">
+      No Internet
+    </h1>
+    <p class="text-lg md:text-xl font-bold max-w-sm mt-4 text-3d-subtle leading-relaxed" data-hi="कृपया अपना नेटवर्क चालू करें और वापस आएं">
+      Please turn on your network and be back
+    </p>
+  </div>
+
+  <!-- Splash Screen -->
+  <div id="splash-screen" class="fixed inset-0 bg-indigo-600 z-[100] flex flex-col items-center justify-center transition-opacity duration-500">
+    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-2xl animate-bounce">
+      <i data-lucide="play" class="w-12 h-12 text-indigo-600 ml-2"></i>
+    </div>
+    <h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">YT Market</h1>
+    <h2 class="text-xl font-bold text-indigo-200" data-hi="प्रीमियम मार्केटप्लेस">Premium Marketplace</h2>
+  </div>
+
+  <!-- Custom Alert Modal -->
+  <div id="custom-alert" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[120] hidden flex items-center justify-center p-6 transition-opacity duration-300 opacity-0">
+    <div class="bg-[#1c1c1e] border border-white/10 rounded-[1.5rem] w-full max-w-[320px] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="alert-content">
+      <div class="p-6 text-center">
+        <div id="alert-icon-container" class="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-indigo-600/20 text-indigo-400">
+          <i data-lucide="info" class="w-6 h-6"></i>
+        </div>
+        <p id="alert-message" class="text-white text-sm font-medium leading-relaxed">Alert Message</p>
+      </div>
+      <button onclick="window.closeAlert()" class="w-full py-3.5 border-t border-white/10 text-indigo-400 font-bold hover:bg-white/5 transition-colors cursor-pointer uppercase tracking-widest text-xs" data-hi="ठीक है">
+        OK
+      </button>
+    </div>
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <nav class="p-4 flex justify-between items-center border-b border-white/10 bg-[#0a0a0a] sticky top-0 z-40">
+    <div class="flex items-center gap-4">
+      <button id="menu-btn" class="p-1.5 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" aria-label="Open Menu">
+        <i data-lucide="menu" class="w-6 h-6 text-gray-300"></i>
+      </button>
+      <span class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 cursor-pointer" onclick="window.setCategory('all'); window.showView('home-view')">YT Market</span>
+    </div>
+    <div class="flex items-center gap-3">
+        <button onclick="window.showView('safety-guide-view')" class="p-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer text-emerald-400 flex items-center gap-1.5 text-xs font-bold" title="Safety, FAQ & Refund Guide">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+            <span class="hidden sm:inline" data-hi="FAQ व सुरक्षा">FAQ & Safety</span>
+        </button>
+        <button onclick="window.showView('notifications-view')" class="p-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer relative" aria-label="Notifications">
+            <i data-lucide="bell" class="w-6 h-6 text-gray-300"></i>
+            <span id="nav-notif-dot" class="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full hidden"></span>
+        </button>
+        <div onclick="window.showView('about-us-view')" class="cursor-pointer animate-spin-3d text-3d-nav text-sm tracking-tighter font-black px-1 select-none">
+            YT Market
+        </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar Overlay & Menu -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 cursor-pointer"></div>
+  <div id="sidebar" class="fixed top-0 left-0 h-full w-full max-w-[320px] shadow-2xl z-50 flex flex-col bg-gradient-to-b from-blue-600 via-blue-700 to-indigo-900 text-white transform -translate-x-full transition-transform duration-300">
+    <div class="p-6 border-b border-white/10 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+            <span class="text-indigo-600 font-black text-xl">YT</span>
+        </div>
+        <div>
+          <h3 class="font-black text-xl text-white tracking-tight">YT Market</h3>
+          <p class="text-[10px] text-blue-200 uppercase font-bold tracking-widest" data-hi="प्रीमियम एसेट्स">Premium Assets</p>
+        </div>
+      </div>
+      <button id="close-sidebar-btn" class="p-2 rounded-full transition-colors hover:bg-white/10 text-blue-200 hover:text-white cursor-pointer" aria-label="Close Sidebar">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    
+    <div class="flex-grow overflow-y-auto p-4 space-y-1 custom-scrollbar">
+      <!-- My Profile Menu Item -->
+      <button onclick="window.openProfileOrAuth(); window.closeSidebar();" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer bg-white/5 mb-2 border border-white/10">
+        <div id="sidebar-profile-avatar" class="w-8 h-8 rounded-full bg-indigo-600/40 border border-indigo-400/40 flex items-center justify-center text-indigo-200 font-bold text-xs shrink-0 overflow-hidden">
+          <i data-lucide="user" class="w-4 h-4"></i>
+        </div>
+        <div class="text-left flex-1 min-w-0">
+          <p id="sidebar-profile-name" class="text-sm font-bold truncate">My Profile</p>
+          <p id="sidebar-profile-sub" class="text-[10px] text-blue-200 truncate" data-hi="लॉगिन / प्रोफाइल देखें">Login / View Profile</p>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-blue-200/60 shrink-0"></i>
+      </button>
+
+      <button onclick="window.setCategory('all'); window.showView('home-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="home" class="w-5 h-5"></i> <span data-hi="होम">Home</span>
+      </button>
+      <!-- Watchlist Menu Item -->
+      <button onclick="window.showView('watchlist-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-rose-300 cursor-pointer">
+        <i data-lucide="bookmark" class="w-5 h-5 text-rose-400"></i> <span data-hi="मेरी वॉचलिस्ट">Watchlist</span>
+        <span id="sidebar-watchlist-count" class="ml-auto text-xs px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30 hidden">0</span>
+      </button>
+      <button onclick="window.setCategory('youtube'); window.showView('home-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="youtube" class="w-5 h-5 text-red-400"></i> <span data-hi="यूट्यूब चैनल">YouTube Channels</span>
+      </button>
+      <button onclick="window.setCategory('instagram'); window.showView('home-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="instagram" class="w-5 h-5 text-pink-500"></i> <span data-hi="इंस्टाग्राम अकाउंट">Instagram Accounts</span>
+      </button>
+      <button onclick="window.setCategory('facebook'); window.showView('home-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="facebook" class="w-5 h-5 text-blue-400"></i> <span data-hi="फेसबुक पेज">Facebook Pages</span>
+      </button>
+      
+      <!-- FAQ, Safety & Handover Hub -->
+      <button onclick="window.showView('safety-guide-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-emerald-300 cursor-pointer">
+        <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i> <span data-hi="सुरक्षा, FAQ व रिफंड गाइड">FAQ, Safety & Refunds</span>
+      </button>
+
+      <!-- Ownership Transfer Rules Section -->
+      <button onclick="window.showView('ownership-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-amber-300 cursor-pointer">
+        <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400"></i> <span data-hi="ओनरशिप ट्रांसफर नियम">Ownership Transfer Rules</span>
+      </button>
+
+      <!-- User Orders / Activity Dashboard -->
+      <button onclick="window.showView('orders-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-indigo-300 cursor-pointer">
+        <i data-lucide="package-check" class="w-5 h-5 text-indigo-400"></i> <span data-hi="मेरे ऑर्डर्स व हैंडओवर">My Orders & Handover</span>
+      </button>
+
+      <!-- App Wallet & Refunds -->
+      <button onclick="window.showView('wallet-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-amber-300 cursor-pointer">
+        <i data-lucide="wallet" class="w-5 h-5 text-amber-400"></i> <span data-hi="ऐप वॉलेट व रिफंड बैलेंस">Wallet & Refunds</span>
+      </button>
+
+      <!-- Dedicated Dispute Center -->
+      <button onclick="window.showView('disputes-hub-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-red-300 cursor-pointer">
+        <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i> <span data-hi="विवाद केंद्र (Dispute Center)">Dispute Center</span>
+      </button>
+
+      <!-- Customer Reviews -->
+      <button onclick="window.showView('reviews-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-yellow-300 cursor-pointer">
+        <i data-lucide="star" class="w-5 h-5 text-yellow-400"></i> <span data-hi="कस्टमर रिव्यूज़ (10k+ रेटिंग)">Customer Reviews (10k+)</span>
+      </button>
+
+      <button onclick="window.showView('sell-channel-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-emerald-400 cursor-pointer">
+        <i data-lucide="upload-cloud" class="w-5 h-5"></i> <span data-hi="अपना चैनल बेचें (2FA OFF)">Sell Your Channel</span>
+      </button>
+      <button onclick="window.showView('chat-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-cyan-400 cursor-pointer">
+        <i data-lucide="message-square" class="w-5 h-5"></i> <span data-hi="लाइव चैट सपोर्ट">Live Chat Support</span>
+      </button>
+      <button onclick="window.open('https://t.me/Ytmarket1', '_blank'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-purple-400 cursor-pointer">
+        <i data-lucide="message-circle" class="w-5 h-5"></i> <span data-hi="अनलिमिटेड लाइव चैट">Unlimited Live Chat</span>
+      </button>
+      <button onclick="window.showView('notifications-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer relative">
+        <i data-lucide="bell" class="w-5 h-5 text-yellow-400"></i> <span data-hi="नोटिफिकेशन्स">Notifications</span>
+        <span id="menu-notif-dot" class="absolute left-7 top-3 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+      </button>
+      <button onclick="window.showView('partner-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="users" class="w-5 h-5 text-indigo-300"></i> <span data-hi="पार्टनर बनें">Become a Partner</span>
+      </button>
+      <button onclick="window.showView('earn-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="dollar-sign" class="w-5 h-5 text-green-300"></i> <span data-hi="कमाएं">Earn</span>
+      </button>
+      <div class="h-px bg-white/10 my-2 mx-4"></div>
+      <button onclick="window.showView('profile-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="user-round" class="w-5 h-5 text-indigo-300"></i> <span data-hi="मेरी प्रोफाइल">My Profile</span>
+      </button>
+      <button onclick="window.showView('settings-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="settings" class="w-5 h-5 text-gray-300"></i> <span data-hi="ऐप सेटिंग्स">App Settings</span>
+      </button>
+      <button onclick="window.showView('about-us-view'); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="info" class="w-5 h-5 text-sky-300"></i> <span data-hi="हमारे बारे में">About Us</span>
+      </button>
+      <button id="sidebar-telegram-btn" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="headset" class="w-5 h-5 text-amber-400"></i> <span data-hi="24/7 सपोर्ट">24/7 Support</span>
+      </button>
+      <button onclick="window.shareApp(); window.closeSidebar();" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium hover:bg-white/10 text-white cursor-pointer">
+        <i data-lucide="share-2" class="w-5 h-5 text-gray-300"></i> <span data-hi="ऐप शेयर करें">Share App</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="app-container" class="hidden">
+    
+    <!-- HOME VIEW -->
+    <div id="home-view" class="app-view animate-fade-in">
+      <div class="bg-gradient-to-b from-indigo-900 via-violet-800 to-purple-900 py-10 px-6 mb-8 text-center relative overflow-hidden">
+        <div class="relative z-10">
+          <h1 class="text-3xl font-extrabold text-white leading-tight mb-4">
+            <span data-hi="मुद्रीकृत एसेट्स सुरक्षित रूप से">Buy and sell</span> <span class="text-indigo-300" data-hi="खरीदें और बेचें।">monetized assets safely.</span>
+          </h1>
+          <p class="text-indigo-100 text-xs mb-8 max-w-xs mx-auto opacity-80" data-hi="प्रीमियम डिजिटल एसेट्स के लिए भारत का सबसे भरोसेमंद मार्केटप्लेस। सत्यापित खाते, सुरक्षित एस्क्रो भुगतान और त्वरित हैंडओवर।">
+            India's most trusted marketplace for premium digital assets. Verified accounts, secure escrow payments, and instant handover.
+          </p>
+          
+          <div class="flex flex-wrap justify-center items-center gap-6 sm:gap-8 mb-8">
+            <div class="text-center">
+              <div class="text-2xl sm:text-3xl font-black text-white">500k+</div>
+              <div class="text-[10px] text-indigo-300 uppercase font-bold tracking-widest" data-hi="डाउनलोड्स">Downloads</div>
+            </div>
+            <div class="w-px h-8 bg-white/20"></div>
+            <div class="text-center">
+              <div class="text-2xl sm:text-3xl font-black text-white">12k+</div>
+              <div class="text-[10px] text-indigo-300 uppercase font-bold tracking-widest" data-hi="एसेट्स बेचे गए">Assets Sold</div>
+            </div>
+            <div class="w-px h-8 bg-white/20"></div>
+            <div onclick="window.showView('reviews-view')" class="text-center cursor-pointer hover:opacity-90 transition-opacity">
+              <div class="text-2xl sm:text-3xl font-black text-yellow-400 flex items-center justify-center gap-1">10k+ <span class="text-xs text-yellow-300">★</span></div>
+              <div class="text-[10px] text-indigo-300 uppercase font-bold tracking-widest" data-hi="कस्टमर रिव्यूज़">Reviews (4.8★)</div>
+            </div>
+          </div>
+
+          <!-- Escrow, Safety, Orders & Wallet Quick Highlights -->
+          <div class="max-w-lg mx-auto mb-8 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left">
+            <div onclick="window.showView('safety-guide-view')" class="bg-black/30 border border-white/10 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer hover:bg-black/50 transition-colors">
+              <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-[10px] font-bold text-white truncate" data-hi="एस्क्रो वॉल्ट">Escrow Safe</p>
+                <p class="text-[8px] text-emerald-400 font-semibold truncate" data-hi="100% रिफंड">100% Refund</p>
+              </div>
+            </div>
+            
+            <div onclick="window.showView('orders-view')" class="bg-black/30 border border-white/10 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer hover:bg-black/50 transition-colors">
+              <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                <i data-lucide="package-check" class="w-3.5 h-3.5"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-[10px] font-bold text-white truncate" data-hi="मेरे ऑर्डर्स">My Orders</p>
+                <p class="text-[8px] text-indigo-300 font-semibold truncate" data-hi="हैंडओवर ट्रैकिंग">Handover Track</p>
+              </div>
+            </div>
+
+            <div onclick="window.showView('wallet-view')" class="bg-black/30 border border-white/10 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer hover:bg-black/50 transition-colors">
+              <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                <i data-lucide="wallet" class="w-3.5 h-3.5"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-[10px] font-bold text-white truncate" data-hi="ऐप वॉलेट">App Wallet</p>
+                <p class="text-[8px] text-amber-300 font-semibold truncate" data-hi="रिफंड स्टोर">Refund Credits</p>
+              </div>
+            </div>
+
+            <div onclick="window.showView('reviews-view')" class="bg-black/30 border border-white/10 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer hover:bg-black/50 transition-colors">
+              <div class="w-7 h-7 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center shrink-0">
+                <i data-lucide="star" class="w-3.5 h-3.5"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-[10px] font-bold text-white truncate" data-hi="रिव्यूज़ (10k+)">10k+ Reviews</p>
+                <p class="text-[8px] text-yellow-300 font-semibold truncate" data-hi="4.8/5.0 रेटिंग">4.8★ Rating</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ownership Rules Highlight Bar -->
+          <div onclick="window.showView('ownership-view')" class="max-w-lg mx-auto mb-8 p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-yellow-950/30 to-amber-950/40 border border-amber-500/30 flex items-center justify-between gap-3 cursor-pointer hover:border-amber-400/60 transition-all text-left shadow-lg group">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-amber-300 flex items-center gap-1.5">YT Market App – Ownership Transfer Rules <span class="px-1.5 py-0.5 text-[9px] bg-amber-500/20 text-amber-300 rounded font-bold border border-amber-500/30">Official</span></p>
+                <p class="text-[10px] text-gray-300">14 Important Rules & Signed Declaration Protocol</p>
+              </div>
+            </div>
+            <span class="text-xs text-amber-400 font-bold flex items-center gap-1 shrink-0 group-hover:translate-x-0.5 transition-transform">Rules <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></span>
+          </div>
+
+          <div class="relative max-w-md mx-auto h-64 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white/10 bg-black group">
+            <div id="banner-slider" class="flex transition-transform duration-700 ease-in-out h-full w-full"></div>
+            <div id="banner-dots-container" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Platform Category Filter Options (YouTube, Instagram, Facebook, All) -->
+      <div class="px-4 mt-6">
+        <div class="max-w-2xl mx-auto grid grid-cols-4 gap-2 sm:gap-3">
+          <button id="cat-btn-all" onclick="window.setCategory('all')" class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-2xl font-bold text-xs transition-all cursor-pointer border bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/30">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-white"></i>
+            <span data-hi="सभी">All</span>
+          </button>
+          
+          <button id="cat-btn-youtube" onclick="window.setCategory('youtube')" class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-2xl font-bold text-xs transition-all cursor-pointer border bg-[#111111] hover:bg-white/5 text-gray-300 border-white/10 hover:text-white">
+            <i data-lucide="youtube" class="w-4 h-4 text-red-500"></i>
+            <span>YouTube</span>
+          </button>
+          
+          <button id="cat-btn-instagram" onclick="window.setCategory('instagram')" class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-2xl font-bold text-xs transition-all cursor-pointer border bg-[#111111] hover:bg-white/5 text-gray-300 border-white/10 hover:text-white">
+            <i data-lucide="instagram" class="w-4 h-4 text-pink-500"></i>
+            <span>Instagram</span>
+          </button>
+          
+          <button id="cat-btn-facebook" onclick="window.setCategory('facebook')" class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-2xl font-bold text-xs transition-all cursor-pointer border bg-[#111111] hover:bg-white/5 text-gray-300 border-white/10 hover:text-white">
+            <i data-lucide="facebook" class="w-4 h-4 text-blue-500"></i>
+            <span>Facebook</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-4 mt-4 mb-4">
+        <div class="relative max-w-2xl mx-auto">
+            <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"></i>
+            <input type="text" id="search-input" oninput="window.handleSearch()" placeholder="Search assets..." class="w-full bg-[#111111] border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white outline-none focus:ring-2 ring-indigo-500 transition-all shadow-lg" />
+        </div>
+      </div>
+
+      <div class="px-4 mb-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i data-lucide="trending-up" class="w-6 h-6 text-indigo-400"></i>
+          <h2 id="category-title" class="text-2xl font-black text-white tracking-tight" data-hi="ट्रेंडिंग एसेट्स">Trending Assets</h2>
+        </div>
+        <button onclick="window.showView('watchlist-view')" class="group flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-rose-500/15 via-pink-500/15 to-purple-500/15 hover:from-rose-500/25 hover:via-pink-500/25 hover:to-purple-500/25 border border-rose-500/30 hover:border-rose-400/50 text-rose-300 hover:text-white text-xs font-bold transition-all duration-300 cursor-pointer shadow-md shadow-rose-950/40">
+          <span class="w-6 h-6 rounded-lg bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400 flex items-center justify-center text-white shadow-sm shadow-rose-500/50 group-hover:scale-110 transition-transform duration-300">
+            <i data-lucide="bookmark" class="w-3.5 h-3.5 fill-white text-white"></i>
+          </span>
+          <span class="bg-gradient-to-r from-rose-200 via-pink-200 to-white bg-clip-text text-transparent font-extrabold tracking-wide" data-hi="वॉचलिस्ट">Watchlist</span>
+          <span id="quick-watchlist-count" class="ml-0.5 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-black shadow-sm hidden">0</span>
+        </button>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4">
+        <div id="channels-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+        <div id="no-channels-msg" class="hidden text-center py-10 text-gray-500 font-medium" data-hi="इस श्रेणी में कोई एसेट्स नहीं मिले।">No assets found in this category.</div>
+      </div>
+
+      <div id="about-section" class="mt-20 px-6 py-16 bg-gradient-to-b from-transparent to-indigo-900/10 border-t border-white/5 rounded-t-[3rem]">
+        <div class="max-w-4xl mx-auto text-center space-y-6">
+            <div class="flex justify-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-indigo-400"></i>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-600/20 flex items-center justify-center border border-emerald-500/30">
+                    <i data-lucide="award" class="w-6 h-6 text-emerald-400"></i>
+                </div>
+            </div>
+            <h2 class="text-3xl font-black text-white" data-hi="YT मार्केट के बारे में">About YT Market</h2>
+            <p class="text-gray-400 leading-relaxed text-sm" data-hi="YT मार्केट प्रीमियम डिजिटल एसेट्स खरीदने और बेचने के लिए भारत का सबसे भरोसेमंद प्लेटफॉर्म है। यहाँ सूचीबद्ध प्रत्येक एसेट हमारी विशेषज्ञ टीम द्वारा 12-बिंदु सत्यापन प्रक्रिया से गुजरता है।">
+                YT Market is India's most trusted platform for buying and selling premium digital assets. Every asset listed here undergoes a rigorous 12-point verification process by our expert team. We guarantee 100% secure escrow transactions and instant ownership transfer.
+            </p>
+            <div class="flex flex-wrap justify-center gap-8 pt-6">
+                <div class="text-center">
+                    <div class="text-2xl font-black text-white">100%</div>
+                    <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest" data-hi="सुरक्षित भुगतान">Escrow Vault</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-black text-white">24/7</div>
+                    <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest" data-hi="सपोर्ट">Support</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-black text-white">Verified</div>
+                    <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest" data-hi="सत्यापित विक्रेता">Sellers</div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT VIEW (WITH ESCROW VAULT, INSPECTION WINDOW, CONFIRM RELEASE & DISPUTE) -->
+    <div id="product-view" class="app-view hidden pb-24 animate-fade-in">
+      <div class="relative h-56 md:h-80 bg-[#050505] overflow-hidden flex justify-center border-b border-white/10">
+        <img id="pv-banner" src="" class="w-full h-full object-contain opacity-90" alt="Banner" />
+        <div class="absolute top-6 left-6 z-20">
+          <button onclick="window.showView('home-view')" class="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-full text-white flex items-center gap-2 pr-5 cursor-pointer hover:bg-white/20 transition-all">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i> <span class="text-sm font-bold" data-hi="वापस">Back</span>
+          </button>
+        </div>
+        <div class="absolute -bottom-12 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full border-4 border-[#0a0a0a] overflow-hidden shadow-2xl z-30 bg-[#111111]">
+            <img id="pv-thumb" src="" class="w-full h-full object-cover" alt="Thumbnail" />
+        </div>
+      </div>
+
+      <div class="max-w-4xl mx-auto px-4 mt-16 space-y-6">
+        <div class="text-center space-y-2">
+            <div class="flex flex-wrap justify-center gap-3 mb-2">
+                <span class="px-4 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-500/20 flex items-center gap-1.5">
+                    <i data-lucide="shield-check" class="w-3 h-3"></i> <span data-hi="सत्यापित विक्रेता">Verified Seller</span>
+                </span>
+                <span class="px-4 py-1.5 bg-emerald-600/20 text-emerald-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 flex items-center gap-1.5">
+                    <i data-lucide="award" class="w-3 h-3"></i> <span data-hi="भरोसेमंद एसेट">Trusted Asset</span>
+                </span>
+                <span class="px-4 py-1.5 bg-purple-600/20 text-purple-300 rounded-lg text-[10px] font-black uppercase tracking-widest border border-purple-500/20 flex items-center gap-1.5">
+                    <i data-lucide="lock" class="w-3 h-3"></i> <span data-hi="एस्क्रो संरक्षित">Escrow Protected</span>
+                </span>
+            </div>
+            <h1 id="pv-name" class="text-4xl font-black text-white tracking-tight uppercase">Channel Name</h1>
+        </div>
+
+        <!-- Channel Stats -->
+        <div class="bg-[#111111] rounded-[2rem] p-8 border border-white/5 shadow-xl">
+          <div class="flex items-center gap-3 mb-6">
+            <i data-lucide="bar-chart-3" class="w-6 h-6 text-indigo-400"></i>
+            <h3 class="text-xl font-bold text-white" data-hi="एसेट आंकड़े">Asset Statistics</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-black/40 p-5 rounded-2xl border border-white/5 flex flex-col justify-between h-32 card-hover transition-all duration-300">
+              <div>
+                <span id="pv-stat-subs-label" class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Followers/Subs</span>
+                <div id="pv-stat-subs" class="text-2xl font-black text-white tabular-nums mt-1">0</div>
+              </div>
+              <div class="flex items-center gap-1.5 text-indigo-400">
+                <i data-lucide="calendar" class="w-3 h-3"></i>
+                <span id="pv-stat-age" class="text-[10px] font-bold uppercase tracking-wider">0</span>
+              </div>
+            </div>
+            <div class="bg-black/40 p-5 rounded-2xl border border-white/5 flex flex-col justify-between h-32 card-hover transition-all duration-300">
+              <div>
+                <span id="pv-stat-watch-label" class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Watch Time/Reach</span>
+                <div id="pv-stat-watch" class="text-2xl font-black text-white tabular-nums mt-1 leading-tight">0</div>
+              </div>
+              <div class="flex items-center gap-1.5 text-emerald-400">
+                <i data-lucide="check-circle" class="w-3 h-3"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider" data-hi="सत्यापित">Verified</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pre-Handover 2FA Notice Badge -->
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3">
+          <div class="p-2 rounded-lg bg-amber-500/20 text-amber-400 shrink-0">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+          </div>
+          <div class="text-xs text-amber-200/90 leading-relaxed">
+            <p class="font-bold text-amber-300 text-sm mb-1" data-hi="अकाउंट ट्रांसफर प्रक्रिया (2FA OFF नियम):">
+              Pre-Handover Rule (2-Step Verification OFF):
+            </p>
+            <p data-hi="सेलर द्वारा 2FA अनिवार्य रूप से OFF रखा गया है ताकि आप नए डिवाइस से बिना किसी OTP/कोड रुकावट के सुगमता से लॉगिन कर सकें।">
+              The seller is mandated to keep 2-Step Verification (2FA) OFF so you can log in smoothly on a new device without OTP/approval lockouts.
+            </p>
+          </div>
+        </div>
+
+        <!-- Purchase & Escrow Verification Section -->
+        <div class="bg-[#111111] rounded-[2.5rem] p-8 md:p-10 border border-white/5 shadow-2xl relative overflow-hidden">
+          <div class="mb-8">
+            <p class="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2" data-hi="मांग मूल्य">Asking Price</p>
+            <h2 class="text-5xl md:text-6xl font-black text-white">₹ <span id="pv-price"></span></h2>
+          </div>
+
+          <div class="space-y-4">
+            <button id="pv-buy-btn" class="w-full py-5 md:py-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-[1.5rem] font-bold text-lg md:text-xl shadow-xl shadow-indigo-600/20 transition-all flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
+              <i data-lucide="shopping-cart" class="w-6 h-6"></i> <span data-hi="सुरक्षित खरीदारी (एस्क्रो)">Secure Purchase (Escrow)</span>
+            </button>
+            <button id="pv-telegram-btn" class="w-full py-4 bg-[#111111] hover:bg-[#1a1a1a] text-[#229ED9] rounded-[1.2rem] font-bold text-base border border-[#229ED9]/20 transition-all flex items-center justify-center gap-3 cursor-pointer">
+              <i data-lucide="send" class="w-5 h-5"></i> <span data-hi="टेलीग्राम पर हमसे चैट करें">Chat with us on Telegram</span>
+            </button>
+          </div>
+          
+          <div class="mt-6 text-center space-y-2">
+            <div class="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+              <span data-hi="पैसा सीधे सेलर को नहीं जाएगा - एस्क्रो वॉल्ट में सुरक्षित रहेगा।">Funds are held safely in Escrow Vault, not sent directly to seller.</span>
+            </div>
+            <p class="text-gray-500 text-xs font-medium" data-hi="भुगतान के बाद लेनदेन आईडी दर्ज करके आईडी-पासवर्ड प्राप्त करें।">Enter Transaction ID below after payment to access inspection credentials.</p>
+          </div>
+          
+          <!-- Verification Form / Escrow Handover Container -->
+          <div class="mt-8 bg-black/40 rounded-[2rem] p-6 md:p-8 border border-white/5">
+            <!-- Form when no request -->
+            <div id="verification-form-container">
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2" data-hi="भुगतान लेनदेन आईडी (Transaction ID)">Payment Transaction ID</label>
+                <input id="transaction-id-input" type="text" placeholder="Enter Transaction ID / UTR" class="w-full p-4 bg-[#111111] border border-white/10 rounded-2xl mb-4 text-white outline-none focus:ring-2 ring-indigo-500 transition-all text-sm" />
+                <button onclick="window.submitVerification()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3 border border-indigo-500/20 transition-all cursor-pointer shadow-lg shadow-indigo-600/20">
+                    <i data-lucide="lock" class="w-5 h-5"></i> <span data-hi="एस्क्रो वॉल्ट में लॉक करें और आईडी देखें">Lock in Escrow & View ID</span>
+                </button>
+            </div>
+
+            <!-- Pending Verification State -->
+            <div id="verification-status-container" class="hidden text-center py-6"></div>
+
+            <!-- Active Escrow Inspection & Credentials Container -->
+            <div id="credentials-container" class="hidden space-y-6 pt-2 animate-fade-in">
+                
+                <!-- Escrow Vault Active Banner -->
+                <div class="p-5 bg-gradient-to-r from-emerald-950/60 to-indigo-950/60 border border-emerald-500/40 rounded-2xl text-left">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-bold flex items-center gap-1.5 border border-emerald-500/30">
+                      <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> <span data-hi="एस्क्रो वॉल्ट: फंड्स होल्ड (सुरक्षित)">Escrow Vault: Funds Held</span>
+                    </span>
+                    <span class="text-xs text-indigo-300 font-mono font-bold" id="escrow-inspection-timer">⏱️ 47:59:12</span>
+                  </div>
+                  <h4 class="text-base font-bold text-white mb-1" data-hi="चरण 1 व 2: क्रेडेंशियल डिलीवरी और 24-48h निरीक्षण विंडो">
+                    Step 1 & 2: Credential Delivery & 24-48h Inspection Window
+                  </h4>
+                  <p class="text-xs text-gray-300 leading-relaxed" data-hi="पैसा सिस्टम के Escrow Vault में सुरक्षित होल्ड है। क्रेडेंशियल्स से लॉगिन करें और सब्सक्राइबर्स, एनालिटिक्स और मोनेटाइजेशन की जांच करें।">
+                    Your money is safely locked in the Escrow Vault. Log in with the credentials below to verify subscribers, analytics, and monetization status.
+                  </p>
+                </div>
+
+                <!-- Encrypted Credentials Display -->
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                      <i data-lucide="key" class="w-3.5 h-3.5 text-indigo-400"></i>
+                      <span data-hi="एन्क्रिप्टेड क्रेडेंशियल फ़ील्ड">Encrypted Credentials</span>
+                    </span>
+                    <span class="text-[10px] text-emerald-400 font-semibold" data-hi="सुरक्षित इन-ऐप शेयरिंग">Secure In-App Sharing</span>
+                  </div>
+
+                  <div class="bg-[#111111] p-4 rounded-2xl border border-white/5">
+                      <p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Email / ID</p>
+                      <div class="flex justify-between items-center">
+                          <span id="reveal-email" class="text-emerald-400 font-mono text-sm break-all select-all"></span>
+                          <button onclick="window.copyText('reveal-email')" class="p-2 hover:bg-white/5 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer" title="Copy Email">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                          </button>
+                      </div>
+                  </div>
+                  <div class="bg-[#111111] p-4 rounded-2xl border border-white/5">
+                      <p class="text-[10px] font-bold text-gray-500 uppercase mb-1" data-hi="पासवर्ड">Password</p>
+                      <div class="flex justify-between items-center">
+                          <span id="reveal-pass" class="text-emerald-400 font-mono text-sm break-all select-all"></span>
+                          <button onclick="window.copyText('reveal-pass')" class="p-2 hover:bg-white/5 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer" title="Copy Password">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                          </button>
+                      </div>
+                  </div>
+                </div>
+
+                <!-- Step 3: Account Ownership Transfer Checklist -->
+                <div class="bg-[#161616] p-5 rounded-2xl border border-white/10 text-left space-y-3">
+                  <h5 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="check-square" class="w-4 h-4 text-indigo-400"></i>
+                    <span data-hi="चरण 3: खाता स्वामित्व ट्रांसफर चेकलिस्ट">Step 3: Ownership Transfer Checklist</span>
+                  </h5>
+                  <p class="text-[11px] text-gray-400 leading-relaxed" data-hi="लॉगिन करने के तुरंत बाद ये 3 काम अवश्य करें:">
+                    Immediately after logging in, complete these 3 critical security updates:
+                  </p>
+                  <div class="space-y-2 text-xs text-gray-300">
+                    <label class="flex items-start gap-2.5 cursor-pointer">
+                      <input type="checkbox" id="chk-sec-1" class="mt-0.5 rounded accent-indigo-600" />
+                      <span data-hi="1. अकाउंट का नया मजबूत पासवर्ड बदलें।">1. Change the account password immediately.</span>
+                    </label>
+                    <label class="flex items-start gap-2.5 cursor-pointer">
+                      <input type="checkbox" id="chk-sec-2" class="mt-0.5 rounded accent-indigo-600" />
+                      <span data-hi="2. सेलर का रिकवरी ईमेल व फ़ोन हटाकर अपना रिकवरी डेटा जोड़ें।">2. Remove seller recovery email/phone & add your own.</span>
+                    </label>
+                    <label class="flex items-start gap-2.5 cursor-pointer">
+                      <input type="checkbox" id="chk-sec-3" class="mt-0.5 rounded accent-indigo-600" />
+                      <span data-hi="3. अकाउंट सुरक्षित होने के बाद अपना स्वयं का 2-Step Verification (2FA) ON करें।">3. Turn your own 2-Step Verification (2FA) ON once secured.</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Escrow Action Buttons: Confirm & Release vs Raise Dispute -->
+                <div class="pt-2 space-y-3">
+                  <button id="btn-release-payment" onclick="window.confirmAndReleasePayment()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg shadow-emerald-600/20">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span data-hi="भुगतान कन्फर्म करें और रिलीज़ करें (Confirm & Release)">Confirm & Release Payment</span>
+                  </button>
+
+                  <button onclick="window.openDisputeModal()" class="w-full py-3.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/30 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer text-sm">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    <span data-hi="विवाद दर्ज करें (Raise Dispute)">Raise Dispute / Problem</span>
+                  </button>
+                  <p class="text-[11px] text-gray-500 text-center" data-hi="विवाद दर्ज होते ही एस्क्रो से पैसा ऑटोमैटिकली फ्रीज हो जाएगा।">
+                    Raising a dispute automatically freezes escrow funds until admin review.
+                  </p>
+                </div>
+
+                <!-- Completed Release State (Hidden initially) -->
+                <div id="released-success-box" class="hidden p-5 bg-emerald-950/60 border border-emerald-500/40 rounded-2xl text-center space-y-2">
+                  <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+                    <i data-lucide="check" class="w-6 h-6"></i>
+                  </div>
+                  <h4 class="text-base font-bold text-white" data-hi="भुगतान सेलर के वॉलेट में जारी कर दिया गया है!">Payment Released to Seller!</h4>
+                  <p class="text-xs text-gray-300" data-hi="डील सफलतापूर्वक पूरी हो गई है। YT मार्केट का उपयोग करने के लिए धन्यवाद।">Deal completed successfully. Thank you for using YT Market.</p>
+                </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISPUTE RESOLUTION MODAL -->
+    <div id="dispute-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[130] hidden flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-[#141416] border border-red-500/30 rounded-[2rem] w-full max-w-lg shadow-2xl p-6 md:p-8 space-y-5 animate-fade-in my-8 text-left">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center">
+              <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-white" data-hi="विवाद दर्ज करें (Raise Dispute)">Raise Dispute</h3>
+              <p class="text-[10px] text-red-300 uppercase font-bold tracking-widest" data-hi="एस्क्रो सुरक्षा एवं रिफंड">Escrow Freeze & 100% Refund Protection</p>
+            </div>
+          </div>
+          <button onclick="window.closeDisputeModal()" class="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer" aria-label="Close modal">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="p-3 bg-red-950/40 border border-red-500/30 rounded-xl text-xs text-red-200">
+          <strong class="text-white block mb-1" data-hi="तत्काल एस्क्रो फ्रीज:">Instant Escrow Freeze:</strong>
+          <span data-hi="विवाद दर्ज होते ही पैसा ऑटोमैटिक फ्रीज हो जाएगा। एडमिन टीम 24 घंटे में चैट और प्रूफ देखकर निर्णय लेगी। धोखाधड़ी साबित होने पर 100% रिफंड मिलेगा।">
+            Escrow funds freeze automatically upon submission. Admin reviews proof & chat records. 100% refund guaranteed if fraud is proven.
+          </span>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <div>
+            <label class="font-bold text-gray-300 block mb-1.5" data-hi="विवाद का मुख्य कारण चुनें:">Select Primary Dispute Reason:</label>
+            <select id="dispute-reason" class="w-full bg-[#1e1e22] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-red-500">
+              <option value="wrong_creds" data-hi="गलत आईडी या पासवर्ड (Wrong ID/Password)">Wrong ID / Password received</option>
+              <option value="account_suspended" data-hi="अकाउंट सस्पेंड / बंद है (Account Suspended)">Account is suspended / disabled</option>
+              <option value="two_fa_active" data-hi="सेलर का 2FA चालू है / लॉगिन ब्लॉक (2FA still ON)">Seller 2FA still active / OTP required</option>
+              <option value="incorrect_stats" data-hi="गलत आंकड़े / फर्जी सब्सक्राइबर्स (Fake or Incorrect Data)">Subscribers/Analytics do not match listing</option>
+              <option value="seller_unresponsive" data-hi="सेलर सहयोग नहीं कर रहा (Seller unresponsive)">Seller unresponsive / fraudulent behavior</option>
+              <option value="other" data-hi="अन्य समस्या (Other reason)">Other issue</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="font-bold text-gray-300 block mb-1.5" data-hi="समस्या का विस्तृत विवरण दें:">Detailed Explanation:</label>
+            <textarea id="dispute-details" rows="3" placeholder="Explain clearly what happened..." class="w-full bg-[#1e1e22] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-red-500 text-xs"></textarea>
+          </div>
+
+          <div>
+            <label class="font-bold text-gray-300 block mb-1.5" data-hi="प्रमाण अटैच करें (Screenshot/Video link or file):">Attach Proof (Screenshot / Video Proof):</label>
+            <input type="text" id="dispute-proof" placeholder="Paste image/video proof URL (or upload below)" class="w-full bg-[#1e1e22] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-red-500 text-xs mb-2" />
+            <label class="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 cursor-pointer font-semibold">
+              <i data-lucide="paperclip" class="w-4 h-4"></i>
+              <span id="dispute-file-label" data-hi="स्क्रीनशॉट फ़ाइल अपलोड करें">Upload screenshot file (Max 2MB)</span>
+              <input type="file" id="dispute-file-input" onchange="window.handleDisputeFile(this)" class="hidden" accept="image/*" />
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-2 flex gap-3">
+          <button onclick="window.closeDisputeModal()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl font-bold transition-all cursor-pointer text-xs" data-hi="रद्द करें">
+            Cancel
+          </button>
+          <button onclick="window.submitDispute()" class="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-all cursor-pointer shadow-lg shadow-red-600/20 text-xs flex items-center justify-center gap-1.5">
+            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+            <span data-hi="विवाद सबमिट करें और फंड फ्रीज करें">Submit & Freeze Funds</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUYER HELPLINE, FAQ, SAFETY GUIDANCE & REFUND HUB (बायर सुरक्षा व FAQ हब) -->
+    <div id="safety-guide-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-24">
+      <div class="max-w-3xl mx-auto space-y-6">
+        
+        <!-- Header Banner -->
+        <div class="bg-gradient-to-r from-emerald-900 via-teal-900 to-indigo-950 border border-emerald-500/30 rounded-[2.5rem] p-6 md:p-8 text-left shadow-2xl relative overflow-hidden">
+          <div class="relative z-10 space-y-3">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-emerald-300 text-xs font-bold uppercase tracking-wider">
+              <i data-lucide="shield-check" class="w-4 h-4"></i> <span data-hi="सुरक्षा व 100% रिफंड गारंटी">Official Escrow & FAQ Hub</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white" data-hi="बायर सुरक्षा, FAQ व 1-वर्ष गारंटी हब">Buyer Safety, FAQ & Guarantee Hub</h2>
+            <p class="text-emerald-100 text-xs md:text-sm max-w-xl leading-relaxed" data-hi="100% एस्क्रो सुरक्षा, 6 माह से 1 साल की गारंटी, अक्सर पूछे जाने वाले सवाल और चैनल ओनर लीगल हैंडओवर डीड की पूरी जानकारी।">
+              100% Escrow Vault protection, 6-Month to 1-Year Guarantee, security FAQs, and signed channel handover legal agreements.
+            </p>
+          </div>
+        </div>
+
+        <!-- Section Navigation Tabs -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-white/10 text-xs font-bold scrollbar-none">
+          <button id="tab-btn-faq" onclick="window.switchSafetyTab('faq')" class="px-4 py-2.5 rounded-xl bg-emerald-600 text-white shadow-lg transition-all whitespace-nowrap cursor-pointer flex items-center gap-2">
+            <i data-lucide="help-circle" class="w-4 h-4"></i>
+            <span data-hi="सवाल-जवाब (FAQ)">Security FAQ</span>
+          </button>
+          <button id="tab-btn-guide" onclick="window.switchSafetyTab('guide')" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-all whitespace-nowrap cursor-pointer flex items-center gap-2">
+            <i data-lucide="list-checks" class="w-4 h-4"></i>
+            <span data-hi="सुरक्षा गाइड व टिप्स">Purchasing Guide</span>
+          </button>
+          <button id="tab-btn-refund" onclick="window.switchSafetyTab('refund')" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-all whitespace-nowrap cursor-pointer flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <span data-hi="रिफंड व 1-वर्ष गारंटी">Refund & 1-Year Guarantee</span>
+          </button>
+          <button id="tab-btn-agreement" onclick="window.switchSafetyTab('agreement')" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-all whitespace-nowrap cursor-pointer flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+            <span data-hi="ओनर लीगल एग्रीमेंट">Legal Handover Deed</span>
+          </button>
+          <button id="tab-btn-ownership" onclick="window.switchSafetyTab('ownership')" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-amber-300 transition-all whitespace-nowrap cursor-pointer flex items-center gap-2">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i>
+            <span data-hi="ओनरशिप ट्रांसफर नियम">Ownership Rules</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: FAQ SECTION -->
+        <div id="safety-tab-faq" class="space-y-4 text-left">
+          <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-4">
+            <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white" data-hi="अक्सर पूछे जाने वाले सवाल (Security FAQ)">Frequently Asked Questions</h3>
+                <p class="text-xs text-gray-400" data-hi="पेमेंट, अकाउंट सुरक्षा, वेरिफिकेशन एवं रिफंड के सभी उत्तर">Instant answers regarding escrow safety, handover, and refunds</p>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-2">
+              <!-- Question 1 -->
+              <details class="group bg-[#18181b] border border-white/5 rounded-2xl overflow-hidden" open>
+                <summary class="flex justify-between items-center p-4 cursor-pointer text-white font-bold text-sm select-none hover:text-emerald-300">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs flex items-center justify-center font-bold">Q1</span>
+                    <span data-hi="क्या पैसे सुरक्षित हैं?">Is my money secured? (क्या पैसे सुरक्षित हैं?)</span>
+                  </div>
+                  <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-4 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed space-y-2">
+                  <p class="text-emerald-300 font-semibold" data-hi="पैसा एक न्यूट्रल थर्ड पार्टी सर्विस, जिसे एस्क्रो कहते हैं, के पास सुरक्षित रहता है। जब खरीदार को अकाउंट मिल जाता है, तब पैसा सेलर को दिया जाता है।">
+                    पैसा एक न्यूट्रल थर्ड पार्टी सर्विस, जिसे <strong>एस्क्रो (Escrow)</strong> कहते हैं, के पास सुरक्षित रहता है। जब खरीदार को अकाउंट मिल जाता है और वह पुष्टि कर देता है, तब पैसा सेलर को दिया जाता है।
+                  </p>
+                  <p class="text-gray-400">
+                    Your payment stays 100% protected in the YT Market Escrow Vault. Funds are only transferred to the seller after your satisfactory inspection and delivery confirmation.
+                  </p>
+                </div>
+              </details>
+
+              <!-- Question 2 -->
+              <details class="group bg-[#18181b] border border-white/5 rounded-2xl overflow-hidden">
+                <summary class="flex justify-between items-center p-4 cursor-pointer text-white font-bold text-sm select-none hover:text-emerald-300">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 text-xs flex items-center justify-center font-bold">Q2</span>
+                    <span data-hi="अकाउंट वेरिफिकेशन कैसे होता है?">How does account verification work? (अकाउंट वेरिफिकेशन कैसे होता है?)</span>
+                  </div>
+                  <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-4 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed space-y-2">
+                  <p data-hi="हमारी विशेषज्ञ टीम चैनल लिस्ट होने से पहले सब्सक्राइबर्स, वॉच टाइम, कॉपीराइट/स्ट्राइक और मोनेटाइजेशन इनेबल स्टेटस की 100% मैनुअल जांच करती है। इसके अलावा खरीदार को 24-48 घंटे का लाइव इंस्पेक्शन विंडो मिलता है।">
+                    Our verification team conducts a strict 12-point audit before listing: verifying active monetization, real organic subscribers, zero active strikes, and clean ownership. Furthermore, buyers get a 24-48h live inspection window.
+                  </p>
+                </div>
+              </details>
+
+              <!-- Question 3 -->
+              <details class="group bg-[#18181b] border border-white/5 rounded-2xl overflow-hidden">
+                <summary class="flex justify-between items-center p-4 cursor-pointer text-white font-bold text-sm select-none hover:text-emerald-300">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 text-xs flex items-center justify-center font-bold">Q3</span>
+                    <span data-hi="अगर अकाउंट न मिले या गलत हो तो रिफंड कैसे मिलेगा?">How do I get a refund if account isn't received or faulty?</span>
+                  </div>
+                  <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-4 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed space-y-2">
+                  <p class="text-amber-300 font-semibold" data-hi="अगर क्रेडेंशियल्स गलत मिलते हैं या अकाउंट सस्पेंड होता है, तो बायर तुरंत 'Raise Dispute' या 'Cancel' कर सकता है। विवाद दर्ज होते ही पैसा ऑटोमैटिकली फ्रीज हो जाता है और 100% रिफंड ऐप वॉलेट या मूल भुगतान विधि में तुरंत वापस कर दिया जाता है।">
+                    If credentials are wrong, suspended, or not as advertised, simply click <strong>"Raise Dispute"</strong> or cancel. Escrow funds freeze instantly, and upon quick admin check, a 100% full refund is credited to your wallet or bank account.
+                  </p>
+                </div>
+              </details>
+
+              <!-- Question 4 -->
+              <details class="group bg-[#18181b] border border-white/5 rounded-2xl overflow-hidden">
+                <summary class="flex justify-between items-center p-4 cursor-pointer text-white font-bold text-sm select-none hover:text-emerald-300">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-full bg-red-500/20 text-red-400 text-xs flex items-center justify-center font-bold">Q4</span>
+                    <span data-hi="सेलर के लिए 2-Step Verification (2FA) बंद (OFF) रखना क्यों जरूरी है?">Why must 2-Step Verification (2FA) be OFF before handover?</span>
+                  </div>
+                  <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-4 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed space-y-2">
+                  <p data-hi="तर्क: जब बायर नए या अनचाहे (Unrecognized) डिवाइस से पहली बार लॉग इन करे, तो ओटीपी (OTP), सिक्योरिटी कोड या अप्रूवल नोटिफिकेशन के कारण लॉग इन ब्लॉक न हो। बायर के सफल लॉगिन के बाद बायर अपना 2FA चालू कर लेता है।">
+                    <strong>Logic:</strong> When the buyer logs in from a new/unrecognized device, login will not be blocked by phone OTPs, Google Prompts, or hardware keys. Once in control, the buyer immediately turns ON their own 2FA.
+                  </p>
+                </div>
+              </details>
+
+              <!-- Question 5 -->
+              <details class="group bg-[#18181b] border border-white/5 rounded-2xl overflow-hidden">
+                <summary class="flex justify-between items-center p-4 cursor-pointer text-white font-bold text-sm select-none hover:text-emerald-300">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 text-xs flex items-center justify-center font-bold">Q5</span>
+                    <span data-hi="6 महीने से 1 साल की गारंटी का क्या अर्थ है?">What is the 6-Month to 1-Year 100% Protection Guarantee?</span>
+                  </div>
+                  <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <div class="p-4 pt-1 text-xs text-gray-300 border-t border-white/5 leading-relaxed space-y-2">
+                  <p data-hi="अगर 6 माह से 1 वर्ष तक खरीदे गए चैनल में पूर्व ओनर द्वारा कोई रीक्लेम या अनधिकृत रिकवरी की कोशिश होती है, तो YT Market 100% जिम्मेदारी लेता है और तुरंत नया चैनल रिप्लेसमेंट या पूरा 100% रिफंड प्रदान करता है।">
+                    If any previous owner claim, unauthorized recovery attempt, or backend fault occurs within 6 months to 1 year of purchase, YT Market guarantees a 100% equal channel replacement or a complete 100% cash refund.
+                  </p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: PURCHASING GUIDE & IN-APP SAFETY RULES -->
+        <div id="safety-tab-guide" class="hidden space-y-6 text-left">
+          
+          <!-- Step-by-Step Purchasing Tips -->
+          <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-6">
+            <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+              <i data-lucide="list-checks" class="w-7 h-7 text-emerald-400"></i>
+              <div>
+                <h3 class="text-xl font-bold text-white" data-hi="Step-by-Step Purchasing Tips (खरीदारी सुरक्षा टिप्स)">Step-by-Step Purchasing Tips</h3>
+                <p class="text-xs text-gray-400" data-hi="नया अकाउंट खरीदते समय सुरक्षा कैसे बरतें और पासवर्ड/रिकवरी कैसे बदलें">How to ensure safety when buying an account and updating recovery credentials</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bg-[#18181b] p-5 rounded-2xl border border-white/5 flex gap-4 items-start">
+                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center shrink-0 text-sm">
+                  1
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm" data-hi="लॉगिन करें और तुरंत पासवर्ड बदलें">Login & Change Password First</h4>
+                  <p class="text-xs text-gray-400 mt-1 leading-relaxed" data-hi="क्रेडेंशियल मिलते ही एक सुरक्षित ब्राउज़र विंडो में लॉगिन करें और गूगल अकाउंट का पासवर्ड तुरंत बदलकर एक नया मजबूत पासवर्ड सेट करें।">
+                    Upon receiving credentials, log in on a clean browser profile and immediately change the main password to a new strong passphrase.
+                  </p>
+                </div>
+              </div>
+
+              <div class="bg-[#18181b] p-5 rounded-2xl border border-white/5 flex gap-4 items-start">
+                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-black flex items-center justify-center shrink-0 text-sm">
+                  2
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm" data-hi="सेलर का रिकवरी डेटा हटाएं और अपना जोड़ें">Replace Seller's Recovery Data</h4>
+                  <p class="text-xs text-gray-400 mt-1 leading-relaxed" data-hi="Google Account Security में जाएं। सेलर के पुराने रिकवरी ईमेल व फोन नंबर को पूरी तरह डिलीट करके अपना स्वयं का पर्सनल रिकवरी ईमेल और फोन नंबर लिंक करें।">
+                    Open Google Account Security settings. Completely delete the seller's recovery email and phone number, and bind your own personal recovery contacts.
+                  </p>
+                </div>
+              </div>
+
+              <div class="bg-[#18181b] p-5 rounded-2xl border border-white/5 flex gap-4 items-start">
+                <div class="w-8 h-8 rounded-full bg-purple-600 text-white font-black flex items-center justify-center shrink-0 text-sm">
+                  3
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm" data-hi="पुराने डिवाइसेस साइन आउट करें">Sign Out Previous Devices</h4>
+                  <p class="text-xs text-gray-400 mt-1 leading-relaxed" data-hi="'Manage Devices' में जाकर सेलर के सभी पुराने फोन/कंप्यूटर से अकाउंट को 'Sign Out' कर दें ताकि पुराना एक्सेस समाप्त हो जाए।">
+                    Navigate to "Manage Devices" and click "Sign Out" on all previously recognized sessions/devices used by the previous owner.
+                  </p>
+                </div>
+              </div>
+
+              <div class="bg-[#18181b] p-5 rounded-2xl border border-white/5 flex gap-4 items-start">
+                <div class="w-8 h-8 rounded-full bg-teal-600 text-white font-black flex items-center justify-center shrink-0 text-sm">
+                  4
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm" data-hi="अपना 2-Step Verification (2FA) तुरंत ON करें">Turn ON Your Own 2FA</h4>
+                  <p class="text-xs text-gray-400 mt-1 leading-relaxed" data-hi="अकाउंट पूरी तरह सुरक्षित होने के बाद अपना खुद का Two-Factor Authentication (2FA) चालू करें और बैकअप कोड्स सुरक्षित सेव करें।">
+                    Activate your personal 2-Step Verification with Google Authenticator or SMS prompt, and download your 8-digit backup codes.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- In-App Safety Rules -->
+          <div class="bg-[#111111] border border-red-500/20 rounded-[2rem] p-6 md:p-8 space-y-5">
+            <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+              <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center">
+                <i data-lucide="alert-octagon" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white" data-hi="इन-ऐप सुरक्षा नियम (In-App Safety Rules)">In-App Safety Rules</h3>
+                <p class="text-xs text-red-400 font-semibold" data-hi="धोखाधड़ी से बचने के लिए प्लेटफॉर्म के बाहर डायरेक्ट लेनदेन सख्त वर्जित है">Strict warning against off-platform direct transactions</p>
+              </div>
+            </div>
+
+            <div class="p-4 bg-red-950/20 border border-red-500/20 rounded-2xl flex items-start gap-3">
+              <i data-lucide="ban" class="w-5 h-5 text-red-400 shrink-0 mt-0.5"></i>
+              <p class="text-xs text-gray-300 leading-relaxed" data-hi="प्लेटफॉर्म के बाहर (Off-platform - जैसे टेलीग्राम या व्हाट्सएप पर डायरेक्ट UPI ट्रांसफर) लेनदेन न करने की सख्त चेतावनी ताकि धोखाधड़ी से बचा जा सके। ऐप के बाहर किसी भी सौदे पर YT Market सुरक्षा या रिफंड की कोई गारंटी नहीं देता।">
+                <strong>Strict Anti-Fraud Warning:</strong> Never send payments directly to sellers outside the application (via external WhatsApp, Telegram, or personal UPI). Transactions conducted off-platform are ineligible for Escrow Vault protection and 100% refund guarantee.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: REFUND POLICY & 1-YEAR GUARANTEE -->
+        <div id="safety-tab-refund" class="hidden space-y-6 text-left">
+          <div class="bg-[#111111] border border-emerald-500/20 rounded-[2rem] p-6 md:p-8 space-y-6">
+            <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white" data-hi="रिफंड पॉलिसी एवं 1-वर्ष 100% गारंटी">Refund Policy & 1-Year Guarantee</h3>
+                <p class="text-xs text-emerald-400 font-semibold" data-hi="अकाउंट खरीदने के बाद कोई भी समस्या आने पर 100% रिफंड सुरक्षा">Total Peace-of-Mind Protection</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+              <!-- Point 1: Instant Cancellation & Refund -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl space-y-2">
+                <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                  <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                  <span data-hi="अकाउंट बाय होने के बाद कैंसलेशन व तत्काल रिफंड">Post-Purchase Cancellation & Full Refund</span>
+                </h4>
+                <p data-hi="अगर किसी को अकाउंट बाय होने के बाद कुछ भी प्रॉब्लम (जैसे गलत पासवर्ड, सस्पेंडेड अकाउंट, फ़ेक सब्सक्राइबर्स या अप्रूवल ब्लॉक) होता है, तो खरीदार कभी भी डील कैंसल कर सकता है और उसका पूरा पैसा 100% रिफंड मिलेगा।">
+                  If any problem occurs after purchasing an account (invalid credentials, disabled monetization, suspended profile, or unresponsive seller), the buyer can instantly cancel the transaction and receive a <strong>100% full refund</strong>.
+                </p>
+              </div>
+
+              <!-- Point 2: 6 Months to 1 Year Guarantee -->
+              <div class="p-5 bg-gradient-to-r from-emerald-950/60 to-indigo-950/60 border border-emerald-500/40 rounded-2xl space-y-2">
+                <div class="flex items-center gap-2 text-emerald-300 font-black text-sm">
+                  <i data-lucide="award" class="w-5 h-5"></i>
+                  <span data-hi="6 महीने से 1 साल तक 100% गारंटी (6 Months to 1 Year Guarantee)">6 Months to 1 Year 100% Guarantee:</span>
+                </div>
+                <p class="text-white font-medium" data-hi="6 month se 1 sal tk agr kuch problem hota hai kharida hu channel me toh 100% humlog guaranty le rahe hain.">
+                  अगर 6 महीने से 1 साल तक खरीदे हुए चैनल में कुछ भी समस्या (जैसे पूर्व मालिक द्वारा हैकिंग, रीक्लेम या विवाद) होती है, तो YT Market <strong>100% गारंटी</strong> लेता है। खरीदार को तत्काल समान चैनल रिप्लेसमेंट या पूरा 100% रिफंड प्रदान किया जाएगा।
+                </p>
+                <p class="text-gray-400 text-[11px]">
+                  YT Market officially assumes 100% warranty for 6 to 12 months after handover. Should any ownership pull-back dispute arise, you receive an immediate replacement asset or 100% money back.
+                </p>
+              </div>
+
+              <!-- Point 3: In-App Wallet Storage -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl space-y-2">
+                <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                  <i data-lucide="wallet" class="w-4 h-4 text-amber-400"></i>
+                  <span data-hi="ऐप वॉलेट सिस्टम में सुरक्षित रिफंड स्टोरेज">Refund Credit to App Wallet</span>
+                </h4>
+                <p data-hi="कैंसलेशन या विवाद निपटारे के बाद रिफंड की राशि आपके सुरक्षित ऐप वॉलेट (App Wallet) में तत्काल जमा होती है, जिसे आप 1 क्लिक में सीधे अपने बैंक/UPI में ट्रांसफर कर सकते हैं या नया चैनल खरीदने में उपयोग कर सकते हैं।">
+                  Refunds from cancelled orders are immediately credited to your dedicated App Wallet balance, withdrawable anytime to your UPI/Bank or usable for another purchase.
+                </p>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button onclick="window.showView('wallet-view')" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <i data-lucide="wallet" class="w-4 h-4"></i>
+                <span data-hi="अपना वॉलेट व रिफंड बैलेंस देखें">View My App Wallet & Refunds</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: LEGAL HANDOVER AGREEMENT & NOTICE -->
+        <div id="safety-tab-agreement" class="hidden space-y-6 text-left">
+          <div class="bg-[#111111] border border-indigo-500/20 rounded-[2rem] p-6 md:p-8 space-y-6">
+            <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+              <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                <i data-lucide="file-check" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white" data-hi="महत्वपूर्ण सूचना: लीगल हैंडओवर एग्रीमेंट (Important Notice)">Important Notice: Legal Handover Agreement</h3>
+                <p class="text-xs text-indigo-400 font-semibold" data-hi="ओनर का हस्तलिखित एवं हस्ताक्षरित कानूनी शपथ पत्र (Handwritten & Signed PDF)">Official Handover Deed with Owner's Physical Signature</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+              <div class="p-5 bg-[#18181b] border border-white/10 rounded-2xl space-y-3">
+                <div class="flex items-center gap-2 text-white font-bold text-sm">
+                  <i data-lucide="pen-tool" class="w-4 h-4 text-indigo-400"></i>
+                  <span data-hi="ओनर का कानूनी आवेदन व शपथ पत्र:">Channel Owner's Legal Handover Deed:</span>
+                </div>
+                <p data-hi="अगर कोई चैनल बाय कर रहा है तो उसको चैनल ओनर का एक आधिकारिक एप्लिकेशन मिलेगा जिसमें सभी लीगल एग्रीमेंट्स शामिल हैं।">
+                  Whenever a buyer purchases a YouTube channel on YT Market, they receive a formal <strong>Legal Handover Affidavit / Agreement</strong> directly from the registered channel owner.
+                </p>
+                <div class="p-4 bg-black/40 border border-white/10 rounded-xl text-amber-200 font-mono text-[11px] leading-relaxed">
+                  "मैं [मूल चैनल स्वामी], यह प्रमाणित करता हूँ कि मैंने स्वेच्छा से अपने चैनल [चैनल नाम] का पूर्ण नियंत्रण, अधिकार, राजस्व व स्वामित्व खरीदार को हैंडओवर कर दिया है। अब से इस चैनल अथवा इसके कंटेंट पर मेरा या मेरे किसी प्रतिनिधि का कोई भी दावा या कानूनी अधिकार नहीं बनता है।"
+                </div>
+                <p class="text-gray-300" data-hi="यह आवेदन पेन से लिखा हुआ रहेगा और ओरिजिनल ओनर का साइन (हस्ताक्षर) रहेगा। इसे ओरिजिनल फोटो करके सुरक्षित PDF के द्वारा बायर को प्रदान किया जाएगा।">
+                  This declaration is <strong>physically handwritten with a pen and bears the verified signature of the original owner</strong>. A high-resolution scan of this legal deed is securely delivered in PDF format to the buyer with each purchase!
+                </p>
+              </div>
+
+              <!-- Agreement Sample Preview Box -->
+              <div class="border border-white/10 bg-[#161619] p-5 rounded-2xl space-y-3">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-2 text-white font-bold text-xs">
+                    <i data-lucide="file-text" class="w-4 h-4 text-indigo-400"></i>
+                    <span>YT_Market_Handover_Deed_Sample.pdf</span>
+                  </div>
+                  <span class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full text-[10px] font-bold">Verified Legal</span>
+                </div>
+                <div class="h-28 bg-[#0a0a0c] border border-dashed border-white/20 rounded-xl p-3 flex flex-col justify-center items-center text-center space-y-1 text-gray-400">
+                  <i data-lucide="stamp" class="w-7 h-7 text-indigo-400"></i>
+                  <p class="text-[11px] font-bold text-gray-200">Legal Ownership Transfer & Release Certificate</p>
+                  <p class="text-[10px] text-gray-500">Includes Physical Sign, Aadhaar/Govt ID verification stamp, Handover Date & UID</p>
+                </div>
+                <button onclick="window.downloadSampleHandoverAgreement()" class="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                  <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
+                  <span data-hi="सैंपल लीगल एग्रीमेंट PDF देखें / डाउनलोड करें">Preview / Download Sample Legal Agreement PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: OWNERSHIP TRANSFER RULES (ओनरशिप ट्रांसफर नियम) -->
+        <div id="safety-tab-ownership" class="hidden space-y-6 text-left">
+          <div class="bg-[#111111] border border-amber-500/30 rounded-[2rem] p-6 md:p-8 space-y-6 shadow-xl">
+            <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white">YT Market App – Ownership Transfer Rules</h3>
+                <p class="text-xs text-amber-400 font-semibold">Important Ownership Rules & Legal Handover Protocol</p>
+              </div>
+            </div>
+
+            <!-- Rules List -->
+            <div class="space-y-3.5 text-xs text-gray-300 leading-relaxed">
+              <!-- Rule 1 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">1</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Legal & Real Ownership</h4>
+                  <p>Seller ko kisi bhi YouTube Channel, Facebook Page/Account ya Instagram Account ko list karne se pehle uska <strong>asli aur legal owner</strong> hona chahiye.</p>
+                </div>
+              </div>
+
+              <!-- Rule 2 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">2</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Signed Ownership Transfer Declaration</h4>
+                  <p>Ownership transfer complete hone ke baad seller buyer ko ek <strong>signed Ownership Transfer Declaration</strong> dene ke liye sahmat hoga.</p>
+                </div>
+              </div>
+
+              <!-- Rule 3 -->
+              <div class="p-4 bg-[#18181b] border border-amber-500/20 rounded-2xl flex items-start gap-3.5 bg-gradient-to-r from-amber-950/20 to-transparent">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">3</span>
+                <div class="space-y-2 w-full">
+                  <h4 class="text-white font-bold text-sm">Ownership Transfer Declaration me Nimnalikhit Jankari Honi Chahiye:</h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-medium text-[11px] text-gray-200">
+                    <div class="flex items-center gap-2 p-2 bg-black/40 border border-white/5 rounded-xl"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i> Seller ka naam</div>
+                    <div class="flex items-center gap-2 p-2 bg-black/40 border border-white/5 rounded-xl"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i> Buyer ka naam</div>
+                    <div class="flex items-center gap-2 p-2 bg-black/40 border border-white/5 rounded-xl"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i> Channel/Page/Account ka naam</div>
+                    <div class="flex items-center gap-2 p-2 bg-black/40 border border-white/5 rounded-xl"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i> Channel/Page/Account link</div>
+                    <div class="flex items-center gap-2 p-2 bg-black/40 border border-white/5 rounded-xl"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i> Transfer ki tareekh</div>
+                    <div class="flex items-center gap-2 p-2 bg-black/40 border border-white/5 rounded-xl"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i> Seller ka signature</div>
+                    <div class="flex items-center gap-2 p-2 bg-black/40 border border-white/5 rounded-xl col-span-1 sm:col-span-2"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i> Seller ki photo ya identity proof (agar required ho)</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rule 4 -->
+              <div class="p-4 bg-[#18181b] border border-amber-500/30 rounded-2xl flex items-start gap-3.5 bg-amber-950/15">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/30 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/40">4</span>
+                <div class="space-y-2 w-full">
+                  <h4 class="text-white font-bold text-sm">Seller Declaration Statement:</h4>
+                  <p class="text-gray-300">Seller declaration me yeh likhega ki:</p>
+                  <div class="p-3.5 bg-black/60 border border-amber-500/30 rounded-xl font-mono text-amber-300 text-xs leading-relaxed italic">
+                    "Main is account/channel ka asli owner hoon aur main iski ownership buyer ko swachchhik roop se transfer kar raha hoon. Transfer ke baad mera is account par koi adhikar nahi rahega."
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rule 5 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">5</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Immediate Credential & Security Update</h4>
+                  <p>Buyer ownership receive karne ke baad sabhi <strong>passwords, recovery email, phone number aur security settings</strong> turant update karega.</p>
+                </div>
+              </div>
+
+              <!-- Rule 6 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">6</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Seller Responsibility for Future Recovery</h4>
+                  <p>Ownership transfer complete hone ke baad future me <strong>account recovery, unauthorized access ya ownership dispute ke liye seller zimmedar hoga</strong>.</p>
+                </div>
+              </div>
+
+              <!-- Rule 7 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">7</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">90 Days Record Retention</h4>
+                  <p>Buyer aur seller dono transaction se sambandhit screenshots, declaration PDF aur transfer records <strong>kam se kam 90 din tak surakshit rakhen</strong>.</p>
+                </div>
+              </div>
+
+              <!-- Rule 8 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">8</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Platform Role & Warranty Disclaimer</h4>
+                  <p>YT Market App sirf buyer aur seller ko platform pradan karta hai. <strong>Platform ownership ya account ki guarantee nahi deta</strong>.</p>
+                </div>
+              </div>
+
+              <!-- Rule 9 -->
+              <div class="p-4 bg-[#18181b] border border-red-500/30 rounded-2xl flex items-start gap-3.5 bg-red-950/15">
+                <span class="w-7 h-7 rounded-lg bg-red-500/20 text-red-400 font-black text-xs flex items-center justify-center shrink-0 border border-red-500/30">9</span>
+                <div>
+                  <h4 class="text-red-300 font-bold text-sm mb-1">Zero Tolerance: Permanent Account Suspension</h4>
+                  <p class="text-red-100">Koi bhi <strong>fake ownership claim, forged document ya fraudulent activity</strong> paye jane par account <strong>permanently suspend</strong> kiya ja sakta hai.</p>
+                </div>
+              </div>
+
+              <!-- Rule 10 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">10</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Signed PDF Declaration Recommended</h4>
+                  <p>Ownership transfer ke liye <strong>signed PDF declaration aur supporting proof upload karna strongly recommended hai</strong>.</p>
+                </div>
+              </div>
+
+              <!-- Rule 11 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">11</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Mutual Consent & Agreement</h4>
+                  <p>Transaction complete hone ke baad buyer aur seller dono is baat ko sweekar karte hain ki <strong>ownership transfer paraspar sahmati se hua hai</strong>.</p>
+                </div>
+              </div>
+
+              <!-- Rule 12 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">12</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Primary Dispute Evidence</h4>
+                  <p>Kisi bhi dispute ki sthiti me <strong>ownership declaration PDF, transfer screenshots aur account access records pramukh saboot maane jayenge</strong>.</p>
+                </div>
+              </div>
+
+              <!-- Rule 13 -->
+              <div class="p-4 bg-[#18181b] border border-white/5 rounded-2xl flex items-start gap-3.5 hover:border-amber-500/30 transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center shrink-0 border border-amber-500/30">13</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Financial & Legal Liability Disclaimer</h4>
+                  <p>YT Market App kisi bhi <strong>financial loss, account ban, policy violation ya third-party claim ke liye zimmedar nahi hoga</strong>.</p>
+                </div>
+              </div>
+
+              <!-- Rule 14 -->
+              <div class="p-4 bg-[#18181b] border border-amber-500/40 rounded-2xl flex items-start gap-3.5 bg-gradient-to-r from-amber-950/30 to-indigo-950/20">
+                <span class="w-7 h-7 rounded-lg bg-amber-500 text-black font-black text-xs flex items-center justify-center shrink-0">14</span>
+                <div>
+                  <h4 class="text-white font-bold text-sm mb-1">Binding Acceptance by All Users</h4>
+                  <p class="text-amber-100 font-semibold">Platform par <strong>account list karne ya kharidne ke saath hi user in sabhi rules aur conditions ko sweekar karta hai</strong>.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 24/7 Helpline Card -->
+        <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-left">
+          <div>
+            <h4 class="text-xl font-bold text-white mb-1" data-hi="सहायता या सवाल के लिए संपर्क करें">Have Questions or Need Assistance?</h4>
+            <p class="text-xs text-gray-400 max-w-md leading-relaxed" data-hi="हमारी 24/7 सपोर्ट टीम आपकी सुरक्षा और सभी सवालों के उत्तर के लिए सदैव तत्पर है।">
+              Our support specialists are available 24/7. Raise a dispute anytime or chat with our security desk.
+            </p>
+          </div>
+          <div class="flex gap-3 w-full md:w-auto">
+            <button onclick="window.showView('chat-view')" class="flex-1 md:flex-none px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+              <i data-lucide="headset" class="w-4 h-4"></i> <span data-hi="लाइव चैट">Live Chat</span>
+            </button>
+            <button onclick="window.showView('home-view')" class="flex-1 md:flex-none px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold text-xs transition-all cursor-pointer" data-hi="मार्केटप्लेस पर लौटें">
+              Back to Market
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DEDICATED OWNERSHIP TRANSFER RULES VIEW -->
+    <div id="ownership-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-24">
+      <div class="max-w-3xl mx-auto space-y-6 text-left">
+        
+        <!-- Header Card -->
+        <div class="bg-gradient-to-br from-[#18150e] via-[#121215] to-[#0c0c0e] border border-amber-500/40 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          <div class="absolute -right-12 -top-12 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div class="flex items-center justify-between mb-6">
+            <button onclick="window.showView('home-view')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Market
+            </button>
+            <span class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-bold flex items-center gap-1.5">
+              <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amber-400"></i> Official Rules
+            </span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-300 text-xs font-bold uppercase tracking-wider">
+              <i data-lucide="file-check" class="w-4 h-4"></i> <span>Mandatory Compliance</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white">YT Market App – Ownership Transfer Rules</h2>
+            <p class="text-gray-300 text-xs md:text-sm leading-relaxed max-w-2xl">
+              Sabhi buyers aur sellers ke liye ownership transfer, declaration documents, security protocols aur account safety se sambandhit 14 mahatvapoorna rules.
+            </p>
+          </div>
+        </div>
+
+        <!-- 14 Ownership Transfer Rules List -->
+        <div class="space-y-4">
+          
+          <!-- Rule 1 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">1</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Asli aur Legal Owner Hona Anivarya</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Seller ko kisi bhi YouTube Channel, Facebook Page/Account ya Instagram Account ko list karne se pehle uska <strong>asli aur legal owner hona chahiye</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 2 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">2</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Signed Ownership Transfer Declaration Sahmati</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Ownership transfer complete hone ke baad seller buyer ko ek <strong>signed Ownership Transfer Declaration</strong> dene ke liye sahmat hoga.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 3 -->
+          <div class="p-5 bg-[#111111] border border-amber-500/30 rounded-2xl flex items-start gap-4 bg-gradient-to-r from-amber-950/20 to-[#111111] shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">3</span>
+            <div class="space-y-3 w-full">
+              <h4 class="text-white font-bold text-sm">Ownership Transfer Declaration me Nimnalikhit Jankari Honi Chahiye:</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-200">
+                <div class="flex items-center gap-2 p-2.5 bg-black/50 border border-white/5 rounded-xl"><i data-lucide="check" class="w-4 h-4 text-amber-400 shrink-0"></i> Seller ka naam</div>
+                <div class="flex items-center gap-2 p-2.5 bg-black/50 border border-white/5 rounded-xl"><i data-lucide="check" class="w-4 h-4 text-amber-400 shrink-0"></i> Buyer ka naam</div>
+                <div class="flex items-center gap-2 p-2.5 bg-black/50 border border-white/5 rounded-xl"><i data-lucide="check" class="w-4 h-4 text-amber-400 shrink-0"></i> Channel/Page/Account ka naam</div>
+                <div class="flex items-center gap-2 p-2.5 bg-black/50 border border-white/5 rounded-xl"><i data-lucide="check" class="w-4 h-4 text-amber-400 shrink-0"></i> Channel/Page/Account link</div>
+                <div class="flex items-center gap-2 p-2.5 bg-black/50 border border-white/5 rounded-xl"><i data-lucide="check" class="w-4 h-4 text-amber-400 shrink-0"></i> Transfer ki tareekh</div>
+                <div class="flex items-center gap-2 p-2.5 bg-black/50 border border-white/5 rounded-xl"><i data-lucide="check" class="w-4 h-4 text-amber-400 shrink-0"></i> Seller ka signature</div>
+                <div class="flex items-center gap-2 p-2.5 bg-black/50 border border-white/5 rounded-xl col-span-1 sm:col-span-2"><i data-lucide="check" class="w-4 h-4 text-amber-400 shrink-0"></i> Seller ki photo ya identity proof (agar required ho)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rule 4 -->
+          <div class="p-5 bg-[#111111] border border-amber-500/40 rounded-2xl flex items-start gap-4 bg-amber-950/20 shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/30 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/40">4</span>
+            <div class="space-y-2.5 w-full">
+              <h4 class="text-white font-bold text-sm">Seller Declaration Ka Spasht Kathan:</h4>
+              <p class="text-xs text-gray-300">Seller declaration me yeh likhega ki:</p>
+              <div class="p-4 bg-black/70 border border-amber-500/40 rounded-xl font-mono text-amber-300 text-xs md:text-sm leading-relaxed italic">
+                "Main is account/channel ka asli owner hoon aur main iski ownership buyer ko swachchhik roop se transfer kar raha hoon. Transfer ke baad mera is account par koi adhikar nahi rahega."
+              </div>
+            </div>
+          </div>
+
+          <!-- Rule 5 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">5</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Suraksha v Credentials Turant Update Karna</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Buyer ownership receive karne ke baad sabhi <strong>passwords, recovery email, phone number aur security settings</strong> turant update karega.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 6 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">6</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Future Recovery v Dispute Par Seller Ki Zimmedari</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Ownership transfer complete hone ke baad future me <strong>account recovery, unauthorized access ya ownership dispute ke liye seller zimmedar hoga</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 7 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">7</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">90 Din Tak Records Surakshit Rakhna</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Buyer aur seller dono transaction se sambandhit <strong>screenshots, declaration PDF aur transfer records kam se kam 90 din tak surakshit rakhen</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 8 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">8</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Platform Suvidha v Madhyam Disclaimer</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                YT Market App sirf buyer aur seller ko platform pradan karta hai. <strong>Platform ownership ya account ki guarantee nahi deta</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 9 -->
+          <div class="p-5 bg-[#111111] border border-red-500/40 rounded-2xl flex items-start gap-4 bg-red-950/20 shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-red-500/30 text-red-400 font-black text-sm flex items-center justify-center shrink-0 border border-red-500/40">9</span>
+            <div class="space-y-1">
+              <h4 class="text-red-300 font-bold text-sm">Zero Tolerance: Permanent Account Suspension</h4>
+              <p class="text-xs text-red-100 leading-relaxed">
+                Koi bhi <strong>fake ownership claim, forged document ya fraudulent activity paye jane par account permanently suspend</strong> kiya ja sakta hai.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 10 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">10</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Signed PDF Declaration & Proof Anishanshit</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Ownership transfer ke liye <strong>signed PDF declaration aur supporting proof upload karna strongly recommended hai</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 11 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">11</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Paraspar Sahmati (Mutual Consent)</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Transaction complete hone ke baad buyer aur seller dono is baat ko sweekar karte hain ki <strong>ownership transfer paraspar sahmati se hua hai</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 12 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">12</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Dispute Ke Samay Pramukh Saboot</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Kisi bhi dispute ki sthiti me <strong>ownership declaration PDF, transfer screenshots aur account access records pramukh saboot maane jayenge</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 13 -->
+          <div class="p-5 bg-[#111111] border border-white/10 rounded-2xl flex items-start gap-4 hover:border-amber-500/40 transition-all shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 font-black text-sm flex items-center justify-center shrink-0 border border-amber-500/30">13</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Third-Party v Financial Hanikarakta Disclaimer</h4>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                YT Market App kisi bhi <strong>financial loss, account ban, policy violation ya third-party claim ke liye zimmedar nahi hoga</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Rule 14 -->
+          <div class="p-5 bg-[#111111] border border-amber-500/40 rounded-2xl flex items-start gap-4 bg-gradient-to-r from-amber-950/30 via-yellow-950/20 to-indigo-950/20 shadow-md">
+            <span class="w-8 h-8 rounded-xl bg-amber-500 text-black font-black text-sm flex items-center justify-center shrink-0">14</span>
+            <div class="space-y-1">
+              <h4 class="text-white font-bold text-sm">Sabhi Rules Ki Baadhya Sweekarokti (Binding Acceptance)</h4>
+              <p class="text-xs text-amber-100 font-semibold leading-relaxed">
+                Platform par <strong>account list karne ya kharidne ke saath hi user in sabhi rules aur conditions ko sweekar karta hai</strong>.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Navigation Buttons Card -->
+        <div class="bg-[#111111] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <button onclick="window.showView('safety-guide-view'); window.switchSafetyTab('agreement');" class="w-full sm:w-auto px-5 py-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-300 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+            <i data-lucide="file-text" class="w-4 h-4"></i> View Handover Deed Agreement
+          </button>
+          <button onclick="window.showView('home-view')" class="w-full sm:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+            <i data-lucide="home" class="w-4 h-4"></i> Return to Marketplace
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SELL CHANNEL VIEW (WITH 2FA OFF REQUIREMENT) -->
+    <div id="sell-channel-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+        <div class="max-w-2xl mx-auto bg-[#111111] border border-white/10 rounded-[2rem] p-6 md:p-8 shadow-xl text-left">
+            <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                <i data-lucide="upload-cloud" class="w-8 h-8 text-emerald-400"></i>
+                <div>
+                  <h2 class="text-2xl font-black text-white" data-hi="अपना चैनल बेचें">Sell Your Channel</h2>
+                  <p class="text-xs text-gray-400" data-hi="सत्यापित लिस्टिंग और सुरक्षित एस्क्रो हैंडओवर">Verified listing with secure escrow handover</p>
+                </div>
+            </div>
+
+            <!-- MANDATORY 2FA OFF PRE-HANDOVER WARNING -->
+            <div class="mb-6 p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-3">
+              <div class="flex items-center gap-2.5 text-amber-400 font-bold text-sm">
+                <i data-lucide="shield-alert" class="w-5 h-5 shrink-0"></i>
+                <span data-hi="अनिवार्य प्री-हैंडओवर आवश्यकता (2FA Verification)">Mandatory Pre-Handover Requirement (2FA Verification):</span>
+              </div>
+              <p class="text-xs text-amber-200/90 leading-relaxed" data-hi="लिस्टिंग बनाने या ट्रांसफर शुरू करने से पहले अकाउंट का 2-Step Verification (2FA) / Two-Factor Authentication अनिवार्य रूप से 'OFF' (Disabled) होना चाहिए।">
+                <strong>Mechanism:</strong> Before creating a listing or initiating a transfer, the seller must ensure the account's <strong>2-Step Verification (2FA) is turned "OFF" (Disabled)</strong>.
+              </p>
+              <p class="text-[11px] text-amber-300/80 leading-relaxed" data-hi="तर्क: जब बायर नए या अनचाहे डिवाइस से लॉग इन करे, तो ओटीपी, सिक्योरिटी कोड या अप्रूवल नोटिफिकेशन के कारण लॉगिन ब्लॉक न हो।">
+                <strong>Logic:</strong> This guarantees that when the buyer logs in from an unrecognized device, login will not be blocked by OTP, phone prompts, or security code verifications.
+              </p>
+              
+              <label class="flex items-start gap-2.5 pt-2 border-t border-amber-500/20 cursor-pointer">
+                <input type="checkbox" id="sell-2fa-confirm" class="mt-1 rounded accent-amber-500 w-4 h-4" />
+                <span class="text-xs font-bold text-white" data-hi="मैंने पुष्टि की है कि इस चैनल/अकाउंट का 2-Step Verification (2FA) पूर्णतया 'OFF' है।">
+                  I confirm that 2-Step Verification (2FA) on this account is fully turned OFF (Disabled).
+                </span>
+              </label>
+            </div>
+
+            <div class="space-y-5">
+                <div>
+                  <label class="text-xs font-bold text-gray-400 uppercase" data-hi="आपका नाम">Your Name</label>
+                  <input type="text" id="sell-name" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-emerald-500 text-sm">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-gray-400 uppercase" data-hi="व्हाट्सएप नंबर">WhatsApp Number</label>
+                  <input type="tel" id="sell-whatsapp" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-emerald-500 text-sm">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-gray-400 uppercase" data-hi="भुगतान आईडी (UPI/Bank)">Payment ID (UPI/Bank)</label>
+                  <input type="text" id="sell-payment" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-emerald-500 text-sm">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-gray-400 uppercase" data-hi="पता">Address</label>
+                  <input type="text" id="sell-address" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-emerald-500 text-sm">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-gray-400 uppercase" data-hi="अपेक्षित मूल्य (₹)">Expected Price (₹)</label>
+                  <input type="number" id="sell-price" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-emerald-500 text-sm">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-gray-400 uppercase" data-hi="चैनल लिंक">Channel Link</label>
+                  <input type="url" id="sell-link" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-emerald-500 text-sm">
+                </div>
+                
+                <button onclick="window.submitSellRequest()" class="w-full py-4 mt-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 cursor-pointer" data-hi="समीक्षा के लिए सबमिट करें">Submit for Review</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHAT VIEW -->
+    <div id="chat-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-24">
+        <div class="max-w-2xl mx-auto bg-[#111111] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col h-[75vh]">
+            <div class="p-6 bg-gradient-to-r from-indigo-900 to-purple-900 border-b border-white/10 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold"><i data-lucide="headset" class="w-5 h-5"></i></div>
+                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[#111111] rounded-full"></span>
+                    </div>
+                    <div>
+                        <h3 id="active-admin-name" class="font-bold text-white text-base">Connecting...</h3>
+                        <p class="text-[10px] text-indigo-200 uppercase font-bold tracking-widest" data-hi="लाइव सपोर्ट टीम">Live Support Team</p>
+                    </div>
+                </div>
+                <div class="text-xs text-indigo-200 font-bold bg-white/10 px-3 py-1 rounded-full tabular-nums">
+                    <span data-hi="टिकट आज: ">Tickets Today:</span> <span id="ticket-count-badge">0/2</span>
+                </div>
+            </div>
+
+            <div id="chat-closed-container" class="hidden flex-grow flex flex-col items-center justify-center p-8 text-center space-y-4">
+                <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-full text-red-500"><i data-lucide="clock" class="w-10 h-10"></i></div>
+                <h4 class="text-xl font-black text-white" data-hi="सपोर्ट बंद है">Support is Closed</h4>
+                <p class="text-sm text-gray-400 max-w-xs mx-auto" data-hi="लाइव चैट सेवा सुबह 8:00 बजे से रात 8:00 बजे तक ही उपलब्ध है। कृपया समय के भीतर वापस आएं।">Live Chat service is only available from 8:00 AM to 8:00 PM. Please visit within operational hours.</p>
+            </div>
+
+            <div id="chat-limit-container" class="hidden flex-grow flex flex-col items-center justify-center p-8 text-center space-y-4">
+                <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-500"><i data-lucide="alert-triangle" class="w-10 h-10"></i></div>
+                <h4 class="text-xl font-black text-white" data-hi="दैनिक टिकट सीमा समाप्त">Daily Ticket Limit Reached</h4>
+                <p class="text-sm text-gray-400 max-w-xs mx-auto" data-hi="आपने आज की अपनी 2 अधिकतम टिकट सीमा समाप्त कर ली है। कृपया कल पुनः प्रयास करें।">You have exhausted your maximum limit of 2 tickets for today. Please try again tomorrow.</p>
+            </div>
+
+            <div id="chat-active-window" class="flex-grow flex flex-col overflow-hidden">
+                <div id="chat-messages-box" class="flex-grow p-6 overflow-y-auto space-y-4 custom-scrollbar bg-black/20 text-left">
+                </div>
+
+                <div id="attachment-preview" class="hidden px-6 py-2 bg-white/5 border-t border-white/5 flex items-center justify-between text-xs text-gray-400 animate-fade-in">
+                    <div class="flex items-center gap-2 truncate">
+                        <i data-lucide="paperclip" class="w-4 h-4 text-indigo-400"></i>
+                        <span id="attachment-preview-text" class="truncate">File loaded</span>
+                    </div>
+                    <button onclick="window.clearAttachment()" class="text-red-400 hover:text-red-300 font-bold cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+
+                <div class="p-4 border-t border-white/10 bg-[#111111] space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="chat-msg-input" placeholder="Type a message..." class="flex-grow bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 ring-indigo-500 text-sm transition-all">
+                        <button onclick="window.sendChatMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-3.5 rounded-xl font-bold shadow-lg shadow-indigo-600/20 flex items-center justify-center cursor-pointer transition-colors">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-4 items-center text-xs">
+                        <label class="flex items-center gap-1.5 text-gray-400 hover:text-white cursor-pointer transition-colors font-medium">
+                            <i data-lucide="paperclip" class="w-4 h-4 text-indigo-400"></i> <span data-hi="फ़ाइल जोड़ें">Attach File</span>
+                            <input type="file" id="chat-file-input" onchange="window.handleFileAttachment(this)" class="hidden">
+                        </label>
+                        <button onclick="window.promptLinkAttachment()" class="flex items-center gap-1.5 text-gray-400 hover:text-white cursor-pointer transition-colors font-medium">
+                            <i data-lucide="link" class="w-4 h-4 text-purple-400"></i> <span data-hi="लिंक जोड़ें">Add Link</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PARTNER VIEW -->
+    <div id="partner-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+        <div class="max-w-2xl mx-auto bg-[#111111] border border-white/10 rounded-[2rem] p-8 shadow-xl text-left">
+            <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                <i data-lucide="users" class="w-8 h-8 text-indigo-400"></i>
+                <h2 class="text-2xl font-black text-white" data-hi="पार्टनर बनें">Become a Partner</h2>
+            </div>
+            <div class="space-y-5">
+                <div><label class="text-xs font-bold text-gray-400 uppercase" data-hi="आधार कार्ड नंबर">Aadhar Card Number</label><input type="text" id="partner-aadhar" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-indigo-500"></div>
+                <div><label class="text-xs font-bold text-gray-400 uppercase" data-hi="पैन कार्ड नंबर">Pan Card Number</label><input type="text" id="partner-pan" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-indigo-500"></div>
+                <div><label class="text-xs font-bold text-gray-400 uppercase" data-hi="व्हाट्सएप नंबर">WhatsApp Number</label><input type="tel" id="partner-whatsapp" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-indigo-500"></div>
+                <div><label class="text-xs font-bold text-gray-400 uppercase" data-hi="भुगतान आईडी">Payment ID</label><input type="text" id="partner-payment" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-indigo-500"></div>
+                <div><label class="text-xs font-bold text-gray-400 uppercase" data-hi="पता">Address</label><input type="text" id="partner-address" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-indigo-500"></div>
+                <div><label class="text-xs font-bold text-gray-400 uppercase" data-hi="कौशल का विवरण">Description of Skills</label><textarea id="partner-skills" rows="3" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-indigo-500"></textarea></div>
+                
+                <button onclick="window.submitPartnerRequest()" class="w-full py-4 mt-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/20 cursor-pointer" data-hi="आवेदन सबमिट करें">Submit Application</button>
+                
+                <div class="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
+                    <p class="text-xs text-blue-300 font-medium leading-relaxed">
+                        <strong class="text-white uppercase tracking-wider block mb-1" data-hi="महत्वपूर्ण सूचना:">Important Notice:</strong> 
+                        <span data-hi="पार्टनर, आपको महीने के अंत में भुगतान मिलता है। आपके फॉर्म की समीक्षा के बाद काम के सभी विवरण प्रदान किए जाएंगे।">Partner, you get payout at the end of the month. All the work details will be provided after reviewing your form.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EARN VIEW -->
+    <div id="earn-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+        <div class="max-w-2xl mx-auto bg-[#111111] border border-white/10 rounded-[2rem] p-8 shadow-xl text-left">
+            <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                <i data-lucide="dollar-sign" class="w-8 h-8 text-green-400"></i>
+                <h2 class="text-2xl font-black text-white" data-hi="कमाएं">Do Earn</h2>
+            </div>
+            
+            <div class="mb-8 p-5 bg-green-900/20 border border-green-500/30 rounded-xl">
+                <h3 class="text-green-400 font-bold mb-2 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4"></i> <span data-hi="नियम और दिशा-निर्देश">Rules & Guidelines</span></h3>
+                <p class="text-sm text-gray-300 leading-relaxed" data-hi="यदि कोई हमारे प्लेटफॉर्म का प्रचार करता है, तो उसे ₹8,000 भारतीय रुपये मिलेंगे। केवल इंस्टाग्राम और यूट्यूब प्रमोशन के लिए मान्य।">
+                    If anyone promotes our platform, they will get <span class="text-white font-bold">₹8,000 Indian rupees</span>. Valid only for Instagram and YouTube promotions. 
+                    <br><br>
+                    <span class="text-white font-medium">Requirements:</span> Minimum <strong>3,000 views</strong> on YouTube video and <strong>10,000 views</strong> on Instagram.
+                </p>
+            </div>
+
+            <div class="space-y-5">
+                <div><label class="text-xs font-bold text-gray-400 uppercase" data-hi="यूट्यूब वीडियो लिंक">YouTube Video Link</label><input type="url" id="earn-yt-link" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-green-500" placeholder="https://youtube.com/..."></div>
+                <div><label class="text-xs font-bold text-gray-400 uppercase" data-hi="इंस्टाग्राम लिंक">Instagram Link</label><input type="url" id="earn-ig-link" class="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 mt-1 text-white outline-none focus:ring-2 ring-green-500" placeholder="https://instagram.com/..."></div>
+                
+                <button onclick="window.submitEarnRequest()" class="w-full py-4 mt-4 bg-green-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-green-600/20 cursor-pointer" data-hi="समीक्षा के लिए लिंक सबमिट करें">Submit Links for Review</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABOUT US VIEW -->
+    <div id="about-us-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+        <div class="max-w-3xl mx-auto bg-[#111111] border border-white/10 rounded-[2rem] p-8 shadow-xl text-gray-300 space-y-6 mb-10 text-left">
+            <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                <i data-lucide="info" class="w-8 h-8 text-sky-400"></i>
+                <h2 class="text-2xl font-black text-white" data-hi="YT मार्केट - हमारे बारे में">YT Market – About Us</h2>
+            </div>
+            
+            <p class="leading-relaxed" data-hi="YT मार्केट में आपका स्वागत है, जो सोशल मीडिया एसेट्स को सुरक्षित और आसानी से खरीदने-बेचने के लिए आपका भरोसेमंद डिजिटल मार्केटप्लेस है। हमारा प्लेटफॉर्म क्रिएटर्स, इन्फ्लुएंशर्स, बिजनेस और डिजिटल मार्केटर्स को एक ही स्थान पर सत्यापित सोशल मीडिया सौदे प्रदान करके तेजी से बढ़ने में मदद करता है।">
+                Welcome to YT Market, your trusted digital marketplace for buying and selling social media assets safely and easily. Our platform helps creators, influencers, businesses, and digital marketers grow faster by providing verified social media deals in one place.
+            </p>
+            
+            <h3 class="text-xl font-bold text-white mt-6 mb-3" data-hi="YT मार्केट पर, उपयोगकर्ता कर सकते हैं:">On YT Market, users can:</h3>
+            <ul class="list-disc pl-5 space-y-2">
+                <li data-hi="यूट्यूब चैनल खरीदें और बेचें">Buy & Sell YouTube Channels</li>
+                <li data-hi="इंस्टाग्राम आईडी खरीदें और बेचें">Buy & Sell Instagram IDs</li>
+                <li data-hi="फेसबुक पेज खरीदें और बेचें">Buy & Sell Facebook Pages</li>
+                <li data-hi="भरोसेमंद खरीदारों और विक्रेताओं से जुड़ें">Connect with trusted buyers & sellers</li>
+                <li data-hi="प्रीमियम डिजिटल एसेट्स एक्सप्लोर करें">Explore premium digital assets</li>
+                <li data-hi="ऑनलाइन बिजनेस और ऑडियंस तेजी से बढ़ाएं">Grow online business and audience quickly</li>
+            </ul>
+            
+            <p class="font-medium text-white" data-hi="हमारा लक्ष्य डिजिटल ट्रेडिंग को सभी के लिए सरल, सुरक्षित, तेज और भरोसेमंद बनाना है।">
+                Our goal is to make digital trading simple, secure, fast, and trusted for everyone.
+            </p>
+
+            <h3 class="text-xl font-bold text-white mt-8 mb-3" data-hi="YT मार्केट क्यों चुनें?">Why Choose YT Market?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="flex gap-2 items-center"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span data-hi="भरोसेमंद मार्केटप्लेस">Trusted Marketplace</span></div>
+                <div class="flex gap-2 items-center"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span data-hi="तेज और सुरक्षित एस्क्रो सौदे">Fast & Secure Escrow Deals</span></div>
+                <div class="flex gap-2 items-center"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span data-hi="प्रीमियम सत्यापित खाते">Premium Verified Accounts</span></div>
+                <div class="flex gap-2 items-center"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span data-hi="आसान यूजर इंटरफेस">Easy User Interface</span></div>
+                <div class="flex gap-2 items-center"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span data-hi="24/7 कस्टमर सपोर्ट">24/7 Customer Support</span></div>
+                <div class="flex gap-2 items-center"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span data-hi="डिजिटल क्रिएटर्स द्वारा भरोसेमंद">Trusted by Digital Creators</span></div>
+                <div class="flex gap-2 items-center"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span data-hi="सुरक्षित संचार प्रणाली">Safe Communication System</span></div>
+                <div class="flex gap-2 items-center"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i> <span data-hi="100% रिफंड विवाद समाधान">100% Refund Dispute Guard</span></div>
+            </div>
+
+            <h3 class="text-xl font-bold text-white mt-8 mb-2" data-hi="हमारा मिशन">Our Mission</h3>
+            <p data-hi="हमारा मिशन एक ऐसा सुरक्षित और भरोसेमंद प्लेटफॉर्म बनाना है जहां क्रिएटर्स और बिजनेस बिना किसी भ्रम या जोखिम के आसानी से डिजिटल सोशल मीडिया एसेट्स खरीद या बेच सकें।">
+                Our mission is to create a safe and trusted platform where creators and businesses can easily buy or sell digital social media assets without confusion or risk.
+            </p>
+
+            <h3 class="text-xl font-bold text-white mt-8 mb-2" data-hi="हमारा विजन">Our Vision</h3>
+            <p data-hi="दुनिया भर में यूट्यूब, इंस्टाग्राम और फेसबुक ट्रेडिंग के लिए सबसे भरोसेमंद डिजिटल मार्केटप्लेस में से एक बनना।">
+                To become one of the most trusted digital marketplaces for YouTube, Instagram, and Facebook trading worldwide.
+            </p>
+
+            <h3 class="text-xl font-bold text-white mt-8 mb-4" data-hi="हमारी सेवाएँ">Services We Provide</h3>
+            
+            <div class="space-y-4">
+                <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                    <h4 class="font-bold text-red-400 mb-2" data-hi="यूट्यूब सेवाएँ">YouTube Services</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-sm">
+                        <li data-hi="मुद्रीकृत चैनल बिक्री">Monetized Channel Selling</li>
+                        <li data-hi="गेमिंग चैनल">Gaming Channel</li>
+                        <li data-hi="व्लॉग चैनल">Vlog Channel</li>
+                        <li data-hi="शॉर्ट्स चैनल">Shorts Channel</li>
+                        <li data-hi="शैक्षिक चैनल">Educational Channel</li>
+                        <li data-hi="सब्सक्राइबर्स ग्रोथ">Subscribers Growth</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                    <h4 class="font-bold text-pink-400 mb-2" data-hi="इंस्टाग्राम सेवाएँ">Instagram Services</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-sm">
+                        <li data-hi="थीम पेज बिक्री">Theme Page Selling</li>
+                        <li data-hi="इन्फ्लुएंसर अकाउंट सौदे">Influencer Account Deals</li>
+                        <li data-hi="रील्स पेज ट्रेडिंग">Reels Page Trading</li>
+                        <li data-hi="बिजनेस पेज सौदे">Business Page Deals</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                    <h4 class="font-bold text-blue-400 mb-2" data-hi="फेसबुक सेवाएँ">Facebook Services</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-sm">
+                        <li data-hi="फेसबुक पेज खरीदें/बेचें">Facebook Page Buy/Sell</li>
+                        <li data-hi="मुद्रीकृत पेज">Monetized Page</li>
+                        <li data-hi="बिजनेस पेज ट्रांसफर">Business Page Transfer</li>
+                        <li data-hi="ऑडियंस ग्रोथ पेज">Audience Growth Pages</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-bold text-white mt-8 mb-3" data-hi="नियम एवं शर्तें">Terms & Conditions</h3>
+            <div class="space-y-3 text-sm">
+                <p><strong class="text-white" data-hi="1. उपयोगकर्ता की जिम्मेदारी:">1. User Responsibility:</strong> <span data-hi="खाते खरीदते या बेचते समय सही जानकारी प्रदान करने की जिम्मेदारी उपयोगकर्ताओं की है।">Users are responsible for providing correct information while buying or selling accounts.</span></p>
+                <p><strong class="text-white" data-hi="2. कोई अवैध गतिविधि नहीं:">2. No Illegal Activity:</strong> <span data-hi="फर्जी जुड़ाव, घोटाले, धोखाधड़ी, हैक किए accounts या अवैध गतिविधियाँ सख्त वर्जित हैं।">Fake engagement, scams, fraud, hacked accounts, or illegal activities are strictly prohibited.</span></p>
+                <p><strong class="text-white" data-hi="3. खाता स्वामित्व:">3. Account Ownership:</strong> <span data-hi="YT मार्केट पर सूचीबद्ध करने से पहले विक्रेता को खाते/पेज/चैनल का असली मालिक होना चाहिए।">The seller must be the real owner of the account/page/channel before listing it on YT Market.</span></p>
+                <p><strong class="text-white" data-hi="4. एस्क्रो भुगतान सुरक्षा:">4. Escrow Payment Safety:</strong> <span data-hi="उपयोगकर्ताओं को केवल प्लेटफॉर्म द्वारा सुझाए गए एस्क्रो वॉल्ट के माध्यम से भुगतान पूरा करना चाहिए।">Users should complete payments only through trusted in-app escrow vault.</span></p>
+                <p><strong class="text-white" data-hi="5. डील सत्यापन:">5. Deal Verification:</strong> <span data-hi="मार्केटप्लेस की गुणवत्ता बनाए रखने के लिए YT मार्केट लिस्टिंग को सत्यापित करता है।">YT Market verifies listings to maintain marketplace quality and user trust.</span></p>
+                <p><strong class="text-white" data-hi="6. विवाद एवं रिफंड:">6. Dispute & Refunds:</strong> <span data-hi="गलत डेटा या फ्रॉड साबित होने पर बायर को 100% रिफंड दिया जाता है।">100% refund is issued to buyer if fraud or invalid credentials are verified.</span></p>
+            </div>
+
+            <div class="mt-8 p-4 bg-indigo-900/20 border border-indigo-500/30 rounded-xl">
+                <h3 class="text-lg font-bold text-white mb-2" data-hi="गोपनीयता सूचना">Privacy Notice</h3>
+                <p class="text-sm" data-hi="YT मार्केट उपयोगकर्ता की गोपनीयता का सम्मान करता है और अनुमति के बिना व्यक्तिगत जानकारी साझा नहीं करता है।">YT Market respects user privacy and does not share personal information without permission.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER ACTIVITY DASHBOARD / ORDERS & HANDOVER VIEW -->
+    <div id="orders-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+      <div class="max-w-3xl mx-auto space-y-6 text-left">
+        <div class="bg-gradient-to-r from-indigo-950 via-purple-950 to-slate-900 border border-indigo-500/30 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          <div class="relative z-10 space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300 text-xs font-bold uppercase tracking-wider">
+              <i data-lucide="package-check" class="w-4 h-4"></i> <span data-hi="यूज़र एक्टिविटी डैशबोर्ड">User Activity Dashboard</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white" data-hi="मेरे ऑर्डर्स व हैंडओवर ट्रैकिंग">My Orders & Asset Handover</h2>
+            <p class="text-indigo-200 text-xs md:text-sm max-w-xl leading-relaxed" data-hi="अपने खरीदे गए एसेट्स, एस्क्रो स्टेटस, क्रेडेंशियल्स और हैंडओवर की प्रगति को यहाँ ट्रैक करें।">
+              Track your purchased assets, escrow status, inspection window, and complete handover delivery.
+            </p>
+          </div>
+        </div>
+
+        <!-- Orders & Asset List Container -->
+        <div id="user-orders-container" class="space-y-4">
+          <!-- Populated dynamically by app.js with real-time orders -->
+        </div>
+      </div>
+    </div>
+
+    <!-- APP WALLET SYSTEM VIEW -->
+    <div id="wallet-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+      <div class="max-w-3xl mx-auto space-y-6 text-left">
+        <div class="bg-gradient-to-r from-amber-950 via-yellow-950 to-stone-900 border border-amber-500/30 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          <div class="relative z-10 space-y-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-300 text-xs font-bold uppercase tracking-wider">
+              <i data-lucide="wallet" class="w-4 h-4"></i> <span data-hi="ऐप वॉलेट सिस्टम">App Wallet System</span>
+            </div>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <p class="text-xs text-amber-200 uppercase font-bold tracking-wider" data-hi="उपलब्ध वॉलेट बैलेंस">Available Balance</p>
+                <h2 id="wallet-total-balance" class="text-3xl md:text-4xl font-black text-white mt-1">₹0</h2>
+              </div>
+              <div>
+                <button onclick="window.showView('home-view')" class="px-5 py-3 bg-white/10 hover:bg-white/15 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-2">
+                  <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                  <span data-hi="चैनल खरीदें">Buy Assets</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wallet Breakdown Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-[#111111] border border-white/10 rounded-2xl p-5 space-y-2">
+            <div class="flex items-center justify-between text-xs text-emerald-400 font-bold">
+              <span class="flex items-center gap-1.5"><i data-lucide="refresh-cw" class="w-4 h-4"></i> <span data-hi="रिफंड बैलेंस (कैंसलेशन)">Refund Credits</span></span>
+              <span class="px-2 py-0.5 bg-emerald-500/20 rounded-full text-[10px]" data-hi="100% सुरक्षित">Instant 100% Refund</span>
+            </div>
+            <p id="wallet-refund-balance" class="text-2xl font-black text-white">₹0</p>
+            <p class="text-[11px] text-gray-400" data-hi="कैंसल किए गए ऑर्डर्स अथवा विवाद निपटारे से प्राप्त रिफंड">
+              Refund balance from cancelled orders & resolved disputes. Stored securely in your wallet.
+            </p>
+          </div>
+
+          <div class="bg-[#111111] border border-white/10 rounded-2xl p-5 space-y-2">
+            <div class="flex items-center justify-between text-xs text-indigo-400 font-bold">
+              <span class="flex items-center gap-1.5"><i data-lucide="lock" class="w-4 h-4"></i> <span data-hi="एस्क्रो वॉल्ट में होल्ड">Escrow Vault Locked</span></span>
+              <span class="px-2 py-0.5 bg-indigo-500/20 rounded-full text-[10px]" data-hi="सक्रिय निरीक्षण">Under Inspection</span>
+            </div>
+            <p id="wallet-escrow-locked" class="text-2xl font-black text-white">₹0</p>
+            <p class="text-[11px] text-gray-400" data-hi="एक्टिव ऑर्डर्स का सुरक्षित एस्क्रो फंड (डील पूरी होने या रद्द होने तक सुरक्षित)">
+              Funds locked in Escrow Vault during active inspection. Released only when you confirm handover.
+            </p>
+          </div>
+        </div>
+
+        <!-- Wallet Transaction History -->
+        <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-4">
+          <div class="flex items-center justify-between border-b border-white/5 pb-4">
+            <div class="flex items-center gap-3">
+              <i data-lucide="history" class="w-6 h-6 text-amber-400"></i>
+              <h3 class="text-lg font-bold text-white" data-hi="ट्रांजेक्शन हिस्ट्री (Wallet Ledger)">Wallet Transactions</h3>
+            </div>
+            <span class="text-xs text-gray-500">Real-time ledger</span>
+          </div>
+
+          <div id="wallet-tx-list" class="space-y-3">
+            <!-- Dynamically rendered -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED DISPUTES HUB VIEW -->
+    <div id="disputes-hub-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+      <div class="max-w-3xl mx-auto space-y-6 text-left">
+        <div class="bg-gradient-to-r from-red-950 via-rose-950 to-stone-900 border border-red-500/30 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          <div class="relative z-10 space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-full text-red-300 text-xs font-bold uppercase tracking-wider">
+              <i data-lucide="shield-alert" class="w-4 h-4"></i> <span data-hi="विवाद व रिफंड केंद्र">Dispute & Refund Hub</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white" data-hi="विवाद निवारण केंद्र (Dispute Center)">Dispute Resolution Center</h2>
+            <p class="text-red-200 text-xs md:text-sm max-w-xl leading-relaxed" data-hi="अगर अकाउंट न मिले, लॉगिन डिटेल्स गलत हो, या 2FA चालू हो, तो यहाँ ट्रांजेक्शन आईडी सबमिट करके एस्क्रो फ्रीज करें और 100% रिफंड पाएं।">
+              Submit transaction ID and select problem reason. Escrow freezes immediately, protecting your payment until verified and refunded.
+            </p>
+          </div>
+        </div>
+
+        <!-- File New Dispute Form Card -->
+        <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-4">
+          <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+            <i data-lucide="alert-triangle" class="w-6 h-6 text-red-400"></i>
+            <div>
+              <h3 class="text-lg font-bold text-white" data-hi="नया विवाद दर्ज करें (File Dispute)">File New Dispute</h3>
+              <p class="text-xs text-gray-400" data-hi="विवाद दर्ज होते ही एस्क्रो से पैसा ऑटोमैटिकली फ्रीज हो जाएगा।">
+                Freezes escrow immediately upon submission. 100% refund guaranteed if fraud is proven.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label class="text-gray-300 font-bold block mb-1" data-hi="ट्रांजेक्शन आईडी या ऑर्डर आईडी दर्ज करें:">Transaction ID / Order ID:</label>
+              <input type="text" id="hub-dispute-txid" placeholder="e.g. TX-98421 or YTM-ORDER-1" class="w-full bg-[#18181b] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-red-500" />
+            </div>
+            <div>
+              <label class="text-gray-300 font-bold block mb-1" data-hi="समस्या का मुख्य कारण चुनें:">Primary Problem Reason:</label>
+              <select id="hub-dispute-reason" class="w-full bg-[#18181b] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-red-500">
+                <option value="account_not_received" data-hi="अकाउंट नहीं मिला (Account Not Received)">Account not received / No credentials</option>
+                <option value="wrong_login" data-hi="लॉगिन डिटेल्स गलत होना (Wrong Login Credentials)">Wrong login credentials / Password changed</option>
+                <option value="two_fa_active" data-hi="2FA चालू है / OTP ब्लॉक (2FA still active)">2FA still active on seller's device / OTP blocked</option>
+                <option value="account_suspended" data-hi="अकाउंट सस्पेंड या डिसेबल है (Account Suspended)">Account suspended or strikes received</option>
+                <option value="fake_stats" data-hi="गलत आंकड़े या फर्जी सब्सक्राइबर्स (Fake / Incorrect Analytics)">Subscribers or monetization do not match listing</option>
+                <option value="other" data-hi="अन्य समस्या (Other Problem)">Other problem</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="text-xs">
+            <label class="text-gray-300 font-bold block mb-1" data-hi="समस्या का विवरण दें:">Detailed Description of Issue:</label>
+            <textarea id="hub-dispute-desc" rows="3" placeholder="Provide details of the problem..." class="w-full bg-[#18181b] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-red-500 text-xs"></textarea>
+          </div>
+
+          <div class="text-xs">
+            <label class="text-gray-300 font-bold block mb-1" data-hi="स्क्रीनशॉट या वीडियो लिंक:">Attach Proof URL (Screenshot/Video):</label>
+            <input type="text" id="hub-dispute-proof" placeholder="Paste proof link or screenshot URL" class="w-full bg-[#18181b] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-red-500 text-xs" />
+          </div>
+
+          <button onclick="window.submitDisputeHubForm()" class="w-full py-4 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-red-600/20 transition-all cursor-pointer">
+            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+            <span data-hi="विवाद दर्ज करें और एस्क्रो फ्रीज करें">Submit Dispute & Freeze Escrow</span>
+          </button>
+        </div>
+
+        <!-- User's Existing Disputes List -->
+        <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-4">
+          <div class="flex items-center justify-between border-b border-white/5 pb-4">
+            <div class="flex items-center gap-3">
+              <i data-lucide="clipboard-list" class="w-6 h-6 text-red-400"></i>
+              <h3 class="text-lg font-bold text-white" data-hi="मेरे विवाद एवं रिफंड स्थिति">My Filed Disputes & Status</h3>
+            </div>
+            <span class="text-xs text-gray-500" data-hi="24/7 एडमिन मॉनिटरिंग">24/7 Monitoring</span>
+          </div>
+
+          <div id="user-disputes-list" class="space-y-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS VIEW (5K+ REVIEWS SYSTEM) -->
+    <div id="reviews-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+      <div class="max-w-3xl mx-auto space-y-6 text-left">
+        
+        <!-- Header Banner with 5k+ counter -->
+        <div class="bg-gradient-to-r from-amber-950 via-yellow-950 to-indigo-950 border border-yellow-500/30 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="space-y-2">
+              <div class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-full text-yellow-300 text-xs font-bold uppercase tracking-wider">
+                <i data-lucide="star" class="w-4 h-4"></i> <span data-hi="सत्यापित खरीदार समीक्षाएं">Verified Buyer Reviews</span>
+              </div>
+              <h2 class="text-2xl md:text-3xl font-black text-white" data-hi="10k+ कस्टमर रिव्यूज़ एवं रेटिंग">10,200+ Customer Reviews</h2>
+              <div class="flex items-center gap-2 text-yellow-400">
+                <div class="flex">
+                  <i data-lucide="star" class="w-5 h-5 fill-yellow-400"></i>
+                  <i data-lucide="star" class="w-5 h-5 fill-yellow-400"></i>
+                  <i data-lucide="star" class="w-5 h-5 fill-yellow-400"></i>
+                  <i data-lucide="star" class="w-5 h-5 fill-yellow-400"></i>
+                  <i data-lucide="star-half" class="w-5 h-5 fill-yellow-400"></i>
+                </div>
+                <span class="text-white font-black text-lg">4.8 / 5.0</span>
+                <span class="text-xs text-gray-400">(10,200 Verified Orders)</span>
+              </div>
+            </div>
+
+            <div>
+              <button onclick="window.openWriteReviewModal()" class="px-5 py-3 bg-yellow-500 hover:bg-yellow-400 text-black rounded-xl font-black text-xs shadow-lg shadow-yellow-500/20 transition-all cursor-pointer flex items-center gap-2">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                <span data-hi="रिव्यू लिखें">Write a Review</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
+          <button onclick="window.filterReviews('all')" id="rf-all" class="px-4 py-2 rounded-xl bg-yellow-500 text-black font-black transition-all cursor-pointer">
+            All (10k+)
+          </button>
+          <button onclick="window.filterReviews(5)" id="rf-5" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-all cursor-pointer flex items-center gap-1">
+            5 Stars (8,460)
+          </button>
+          <button onclick="window.filterReviews(4)" id="rf-4" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-all cursor-pointer flex items-center gap-1">
+            4 Stars (1,390)
+          </button>
+          <button onclick="window.filterReviews(3)" id="rf-3" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-all cursor-pointer flex items-center gap-1">
+            3 Stars (350)
+          </button>
+        </div>
+
+        <!-- Reviews List Container -->
+        <div id="reviews-list-container" class="space-y-3">
+          <!-- Dynamically populated with 5k+ reviews pool -->
+        </div>
+      </div>
+    </div>
+
+    <!-- WRITE REVIEW MODAL -->
+    <div id="write-review-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[130] hidden flex items-center justify-center p-4">
+      <div class="bg-[#141416] border border-yellow-500/30 rounded-[2rem] w-full max-w-md shadow-2xl p-6 md:p-8 space-y-4 text-left">
+        <div class="flex justify-between items-center border-b border-white/10 pb-3">
+          <div class="flex items-center gap-2 text-yellow-400 font-bold">
+            <i data-lucide="star" class="w-5 h-5"></i>
+            <span data-hi="अपना अनुभव साझा करें">Share Your Feedback</span>
+          </div>
+          <button onclick="window.closeWriteReviewModal()" class="p-1 rounded-full text-gray-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        
+        <p class="text-xs text-gray-300" data-hi="कृपया हमारे ऐप के बारे में अपना अनुभव साझा करें।">
+          Please share with us your experience about our app.
+        </p>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="text-gray-400 font-bold block mb-1" data-hi="आपका नाम">Your Name:</label>
+            <input type="text" id="review-user-name" placeholder="e.g. Rahul Verma" class="w-full bg-[#1e1e22] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-yellow-500 text-xs" />
+          </div>
+
+          <div>
+            <label class="text-gray-400 font-bold block mb-1" data-hi="स्टार रेटिंग चुनें (3 से 5 स्टार):">Star Rating:</label>
+            <select id="review-star-rating" class="w-full bg-[#1e1e22] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-yellow-500 text-xs">
+              <option value="5">⭐⭐⭐⭐⭐ 5 Stars (Excellent)</option>
+              <option value="4">⭐⭐⭐⭐ 4 Stars (Very Good)</option>
+              <option value="3">⭐⭐⭐ 3 Stars (Good)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-gray-400 font-bold block mb-1" data-hi="आपकी समीक्षा / संदेश:">Your Review:</label>
+            <textarea id="review-comment-text" rows="3" placeholder="e.g. Great app, escrow payment is very secure, handover was smooth." class="w-full bg-[#1e1e22] border border-white/10 rounded-xl p-3 text-white outline-none focus:ring-2 ring-yellow-500 text-xs"></textarea>
+          </div>
+        </div>
+
+        <div class="pt-2 flex gap-3">
+          <button onclick="window.closeWriteReviewModal()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl font-bold text-xs cursor-pointer" data-hi="रद्द करें">Cancel</button>
+          <button onclick="window.submitUserReview()" class="flex-1 py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-black rounded-xl text-xs cursor-pointer shadow-lg shadow-yellow-500/20" data-hi="रिव्यू सबमिट करें">Submit Review</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div id="settings-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+        <div class="max-w-xl mx-auto bg-[#111111] border border-white/10 rounded-[2rem] p-8 shadow-xl text-left">
+            <div class="flex items-center gap-3 mb-8 border-b border-white/5 pb-4">
+                <i data-lucide="settings" class="w-8 h-8 text-gray-400"></i>
+                <h2 class="text-2xl font-black text-white" data-hi="ऐप सेटिंग्स">App Settings</h2>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="flex justify-between items-center bg-[#1a1a1a] p-4 rounded-xl border border-white/5">
+                    <div>
+                        <p class="text-white font-bold" data-hi="भाषा (Language)">Language</p>
+                        <p class="text-xs text-gray-500" data-hi="अपनी पसंदीदा भाषा चुनें">Select your preferred language</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window.setLanguage('en')" id="btn-lang-en" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg transition-all cursor-pointer">EN</button>
+                        <button onclick="window.setLanguage('hi')" id="btn-lang-hi" class="px-4 py-2 bg-black/40 text-gray-400 border border-white/10 rounded-lg text-sm font-bold transition-all cursor-pointer">HI</button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-[#1a1a1a] p-4 rounded-xl border border-white/5">
+                    <div>
+                        <p class="text-white font-bold" data-hi="डार्क थीम">Dark Theme</p>
+                        <p class="text-xs text-gray-500" data-hi="डार्क और लाइट मोड के बीच स्विच करें">Switch between dark and light mode</p>
+                    </div>
+                    <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" id="toggle-theme" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-600 appearance-none cursor-pointer z-10" onclick="window.toggleThemeSetting()"/>
+                        <label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-[#1a1a1a] p-4 rounded-xl border border-white/5">
+                    <div>
+                        <p class="text-white font-bold" data-hi="क्लिक साउंड">Click Sound</p>
+                        <p class="text-xs text-gray-500" data-hi="बटन क्लिक पर ध्वनि चलाएं">Play sound on button clicks</p>
+                    </div>
+                    <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" id="toggle-sound" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-600 appearance-none cursor-pointer z-10" onchange="window.toggleSetting('sound', this.checked)"/>
+                        <label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-[#1a1a1a] p-4 rounded-xl border border-white/5">
+                    <div>
+                        <p class="text-white font-bold" data-hi="पुश नोटिफिकेशन्स">Push Notifications</p>
+                        <p class="text-xs text-gray-500" data-hi="एडमिन से अलर्ट प्राप्त करें">Receive alerts from admin</p>
+                    </div>
+                    <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" id="toggle-notif" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-600 appearance-none cursor-pointer z-10" onchange="window.toggleSetting('notifications', this.checked)"/>
+                        <label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS VIEW -->
+    <div id="notifications-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+        <div class="max-w-2xl mx-auto bg-[#111111] border border-white/10 rounded-[2rem] p-8 shadow-xl min-h-[50vh] text-left">
+            <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                <i data-lucide="bell" class="w-8 h-8 text-yellow-400"></i>
+                <h2 class="text-2xl font-black text-white" data-hi="नोटिफिकेशन्स">Notifications</h2>
+            </div>
+            
+            <div id="notifications-list" class="space-y-4">
+                <div class="text-center py-10 text-gray-500 font-medium" data-hi="कोई नई अधिसूचना नहीं।">No new notifications.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MY PROFILE VIEW -->
+    <div id="profile-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-20">
+      <div class="max-w-2xl mx-auto space-y-6">
+        
+        <!-- Header Profile Identity Card -->
+        <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 sm:p-8 shadow-xl text-left relative overflow-hidden">
+          <div class="absolute -right-12 -top-12 w-44 h-44 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 relative z-10">
+            <div id="profile-display-avatar" class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 border-2 border-indigo-400/40 flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-indigo-600/30 shrink-0 overflow-hidden select-none">
+              <i data-lucide="user" class="w-10 h-10"></i>
+            </div>
+            
+            <div class="flex-1 text-center sm:text-left min-w-0">
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
+                <h2 id="profile-display-name" class="text-2xl font-black text-white truncate">Guest User</h2>
+                <span id="profile-verified-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                  <i data-lucide="check-circle" class="w-3 h-3"></i> <span data-hi="सत्यापित खाता">Verified Account</span>
+                </span>
+              </div>
+              
+              <p id="profile-display-email" class="text-sm text-gray-400 mb-3 flex items-center justify-center sm:justify-start gap-1.5">
+                <i data-lucide="mail" class="w-3.5 h-3.5 text-gray-500"></i>
+                <span class="truncate">not-logged-in@ytmarket.app</span>
+              </p>
+              
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs text-gray-400">
+                <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-xl flex items-center gap-1.5" data-hi="स्टेटस: एक्टिव सदस्य">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Status: Active Member
+                </span>
+                <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-xl flex items-center gap-1.5" data-hi="सुरक्षा: एस्क्रो सुरक्षित">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-400"></i> Escrow Protected
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Update Name & User Details Card -->
+        <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 sm:p-8 shadow-xl text-left space-y-4">
+          <div class="flex items-center gap-3 border-b border-white/5 pb-3">
+            <i data-lucide="user-check" class="w-5 h-5 text-indigo-400"></i>
+            <div>
+              <h3 class="text-base font-bold text-white" data-hi="उपयोगकर्ता नाम">User Full Name</h3>
+              <p class="text-xs text-gray-400" data-hi="ऐप में प्रदर्शित होने वाला अपना नाम अपडेट करें">Update your name displayed across the app</p>
+            </div>
+          </div>
+          
+          <div class="space-y-3.5">
+            <div>
+              <label class="text-xs font-bold text-gray-400 block mb-1.5" data-hi="आपका नाम">Your Name / आपका नाम:</label>
+              <input type="text" id="profile-input-name" placeholder="Enter your full name" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3.5 text-white text-sm outline-none focus:ring-2 ring-indigo-500 transition-all" />
+            </div>
+            
+            <div>
+              <label class="text-xs font-bold text-gray-400 block mb-1.5" data-hi="ईमेल पता">Email Address / ईमेल पता:</label>
+              <input type="email" id="profile-input-email" readonly disabled class="w-full bg-[#141416] border border-white/5 rounded-xl p-3.5 text-gray-400 text-sm cursor-not-allowed" />
+            </div>
+            
+            <button onclick="window.saveProfileName()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs transition-all cursor-pointer shadow-lg shadow-indigo-600/20 flex items-center gap-2">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span data-hi="नाम सेव करें">Save Name</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Password Change Card -->
+        <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 sm:p-8 shadow-xl text-left space-y-4">
+          <div class="flex items-center gap-3 border-b border-white/5 pb-3">
+            <i data-lucide="key-round" class="w-5 h-5 text-amber-400"></i>
+            <div>
+              <h3 class="text-base font-bold text-white" data-hi="पासवर्ड बदलें (Password Change)">Change Password / पासवर्ड बदलें</h3>
+              <p class="text-xs text-gray-400" data-hi="नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए">New password must be at least 6 characters</p>
+            </div>
+          </div>
+          
+          <div class="space-y-3.5">
+            <div>
+              <label class="text-xs font-bold text-gray-400 block mb-1.5" data-hi="नया पासवर्ड">New Password / नया पासवर्ड:</label>
+              <div class="relative">
+                <input type="password" id="profile-new-pass" placeholder="Enter new password (min 6 chars)" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3.5 pr-11 text-white text-sm outline-none focus:ring-2 ring-indigo-500 transition-all" />
+                <button type="button" onclick="window.togglePasswordVisibility('profile-new-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 cursor-pointer">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-bold text-gray-400 block mb-1.5" data-hi="नए पासवर्ड की पुष्टि करें">Confirm New Password / नए पासवर्ड की पुष्टि:</label>
+              <div class="relative">
+                <input type="password" id="profile-confirm-pass" placeholder="Confirm your new password" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3.5 pr-11 text-white text-sm outline-none focus:ring-2 ring-indigo-500 transition-all" />
+                <button type="button" onclick="window.togglePasswordVisibility('profile-confirm-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 cursor-pointer">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <button onclick="window.changeAccountPassword()" class="w-full sm:w-auto px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold text-xs transition-all cursor-pointer shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span data-hi="पासवर्ड अपडेट करें">Update Password</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Logout Card -->
+        <div class="bg-[#111111] border border-white/10 rounded-[2rem] p-6 sm:p-8 shadow-xl text-left space-y-4">
+          <div class="flex items-center gap-3 border-b border-white/5 pb-3">
+            <i data-lucide="log-out" class="w-5 h-5 text-red-400"></i>
+            <div>
+              <h3 class="text-base font-bold text-white" data-hi="लॉगआउट (Logout)">Account Logout</h3>
+              <p class="text-xs text-gray-400" data-hi="अपने खाते से सुरक्षित रूप से लॉगआउट करें">Safely sign out from your current device</p>
+            </div>
+          </div>
+          
+          <p class="text-xs text-gray-400 leading-relaxed" data-hi="लॉगआउट करने पर आपका वर्तमान सत्र समाप्त हो जाएगा। दोबारा उपयोग करने के लिए ईमेल व पासवर्ड से लॉगिन करें।">
+            Logging out will end your current session. You can easily log back in using your email and password.
+          </p>
+
+          <button onclick="window.performLogout()" class="w-full sm:w-auto px-7 py-3.5 bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span data-hi="लॉगआउट करें">Log Out / लॉगआउट करें</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- WATCHLIST VIEW (ONLY USER SAVED / WATCHED ASSETS) -->
+    <div id="watchlist-view" class="app-view hidden animate-fade-in pt-6 px-4 pb-24">
+      <div class="max-w-7xl mx-auto space-y-6 text-left">
+        
+        <!-- Header Banner -->
+        <div class="bg-gradient-to-r from-rose-950/60 via-pink-950/40 to-stone-900 border border-rose-500/30 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <button onclick="window.showView('home-view')" class="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-colors cursor-pointer" title="Back to Marketplace">
+                  <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </button>
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-rose-500/20 border border-rose-500/30 rounded-full text-rose-300 text-xs font-bold uppercase tracking-wider">
+                  <i data-lucide="bookmark" class="w-3.5 h-3.5 fill-rose-500 text-rose-500"></i> <span data-hi="मेरी वॉचलिस्ट">Saved Assets</span>
+                </div>
+              </div>
+              <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight" data-hi="मेरी वॉचलिस्ट (Watchlist)">
+                My Watchlist
+              </h1>
+              <p class="text-rose-200/80 text-xs md:text-sm max-w-xl leading-relaxed" data-hi="आपके द्वारा वॉचलिस्ट में जोड़े गए सभी यूट्यूब, इंस्टाग्राम व फेसबुक एसेट्स यहाँ दिखेंगे।">
+                Only the assets you have added to your watchlist are displayed here. Monitor pricing and secure them anytime.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-3 self-start sm:self-center">
+              <span id="watchlist-total-count" class="px-4 py-2 rounded-2xl bg-black/40 border border-white/10 text-white font-bold text-sm">
+                0 Assets
+              </span>
+              <button onclick="window.clearWatchlist()" class="px-4 py-2 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5" title="Clear all watchlist items">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span data-hi="खाली करें">Clear All</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search / Filter in Watchlist -->
+        <div class="relative max-w-xl">
+          <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
+          <input type="text" id="watchlist-search-input" oninput="window.renderWatchlist()" placeholder="Search in your watchlist..." class="w-full bg-[#111111] border border-white/10 rounded-2xl py-3 pl-11 pr-4 text-white text-sm outline-none focus:ring-2 ring-rose-500 transition-all shadow-md" />
+        </div>
+
+        <!-- Watchlist Channels Grid -->
+        <div id="watchlist-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+
+        <!-- Empty State Box -->
+        <div id="watchlist-empty-box" class="hidden bg-[#111111] border border-white/10 rounded-[2.5rem] p-10 md:p-14 text-center space-y-5 max-w-md mx-auto my-8">
+          <div class="w-20 h-20 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto shadow-inner">
+            <i data-lucide="bookmark" class="w-10 h-10 text-rose-400"></i>
+          </div>
+          <div class="space-y-2">
+            <h3 class="text-xl font-bold text-white" data-hi="आपकी वॉचलिस्ट खाली है">Your Watchlist is Empty</h3>
+            <p class="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto" data-hi="मार्केटप्लेस में किसी भी एसेट कार्ड पर बुकमार्क आइकन दबाकर उसे अपनी वॉचलिस्ट में जोड़ें।">
+              You haven't saved any assets yet. Browse available channels and tap the bookmark icon to save them here.
+            </p>
+          </div>
+          <button onclick="window.showView('home-view')" class="px-6 py-3.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-rose-600/20 transition-all cursor-pointer inline-flex items-center gap-2">
+            <i data-lucide="compass" class="w-4 h-4"></i>
+            <span data-hi="एसेट्स ब्राउज़ करें">Explore Assets / एसेट्स देखें</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AUTHENTICATION (SIGN UP & LOGIN) MANDATORY GATE MODAL -->
+  <div id="auth-modal" class="fixed inset-0 bg-[#0a0a0a]/95 backdrop-blur-md z-[150] hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#141416] border border-white/10 rounded-[2rem] w-full max-w-md shadow-2xl p-6 sm:p-8 space-y-5 text-left relative my-auto">
+      <div class="flex justify-between items-center border-b border-white/10 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 font-black text-sm">
+            YT
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="auth-modal-title" class="font-bold text-base text-white">YT Market</h3>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold border border-amber-500/20">
+                <i data-lucide="lock" class="w-3 h-3"></i>
+                <span data-hi="लॉगिन आवश्यक">Login Required</span>
+              </span>
+            </div>
+            <p id="auth-modal-sub" class="text-[11px] text-gray-400" data-hi="ऐप खोलने के लिए साइन अप या लॉगिन करें">Sign in or sign up to access the app</p>
+          </div>
+        </div>
+        <button id="auth-modal-close-btn" onclick="window.closeAuthModal()" class="p-1.5 rounded-full text-gray-400 hover:text-white cursor-pointer hover:bg-white/5 hidden" aria-label="Close modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Auth Tabs: Login vs Sign Up -->
+      <div class="grid grid-cols-2 p-1 bg-black/40 rounded-xl border border-white/10">
+        <button id="auth-tab-login" onclick="window.switchAuthTab('login')" class="py-2.5 text-xs font-bold rounded-lg transition-all cursor-pointer bg-indigo-600 text-white shadow-md">
+          Login / लॉगिन
+        </button>
+        <button id="auth-tab-signup" onclick="window.switchAuthTab('signup')" class="py-2.5 text-xs font-bold rounded-lg transition-all cursor-pointer text-gray-400 hover:text-white">
+          Sign Up / साइन अप
+        </button>
+      </div>
+
+      <!-- Google / Gmail One-Click Sign In Button -->
+      <div>
+        <button type="button" id="btn-continue-with-google" onclick="window.loginWithGoogle()" class="w-full py-3.5 bg-white hover:bg-gray-100 text-gray-900 rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-lg active:scale-[0.98]">
+          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span id="auth-google-text">Continue with Google (Gmail)</span>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-3">
+        <div class="h-px flex-1 bg-white/10"></div>
+        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest" data-hi="या ईमेल से जारी रखें">OR WITH EMAIL</span>
+        <div class="h-px flex-1 bg-white/10"></div>
+      </div>
+
+      <!-- Sign Up Form -->
+      <form id="auth-signup-form" onsubmit="window.handleEmailSignup(event)" class="space-y-3.5 hidden">
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 block mb-1" data-hi="पूरा नाम">Full Name / पूरा नाम:</label>
+          <input type="text" id="signup-name" required placeholder="e.g. Ramesh Soren" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3 text-white text-xs outline-none focus:ring-2 ring-indigo-500" />
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 block mb-1" data-hi="ईमेल पता">Email Address / ईमेल पता:</label>
+          <input type="email" id="signup-email" required placeholder="name@example.com" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3 text-white text-xs outline-none focus:ring-2 ring-indigo-500" />
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 block mb-1" data-hi="पासवर्ड (कम से कम 6 अक्षर)">Password / पासवर्ड:</label>
+          <div class="relative">
+            <input type="password" id="signup-pass" required minlength="6" placeholder="Min 6 characters" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3 pr-10 text-white text-xs outline-none focus:ring-2 ring-indigo-500" />
+            <button type="button" onclick="window.togglePasswordVisibility('signup-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 cursor-pointer">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 block mb-1" data-hi="पासवर्ड की पुष्टि करें">Confirm Password / पासवर्ड की पुष्टि करें:</label>
+          <div class="relative">
+            <input type="password" id="signup-confirm-pass" required minlength="6" placeholder="Re-enter your password" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3 pr-10 text-white text-xs outline-none focus:ring-2 ring-indigo-500" />
+            <button type="button" onclick="window.togglePasswordVisibility('signup-confirm-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 cursor-pointer">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-auth-signup-submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs transition-all cursor-pointer shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+          <i data-lucide="user-plus" class="w-4 h-4"></i>
+          <span data-hi="खाता बनाएं (साइन अप)">Create Account / साइन अप करें</span>
+        </button>
+      </form>
+
+      <!-- Login Form -->
+      <form id="auth-login-form" onsubmit="window.handleEmailLogin(event)" class="space-y-3.5">
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 block mb-1" data-hi="ईमेल पता">Email Address / ईमेल पता:</label>
+          <input type="email" id="login-email" required placeholder="name@example.com" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3 text-white text-xs outline-none focus:ring-2 ring-indigo-500" />
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-[11px] font-bold text-gray-400" data-hi="पासवर्ड">Password / पासवर्ड:</label>
+            <button type="button" onclick="window.forgotPassword()" class="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer" data-hi="पासवर्ड भूल गए?">Forgot Password?</button>
+          </div>
+          <div class="relative">
+            <input type="password" id="login-pass" required placeholder="Enter your password" class="w-full bg-[#1a1a1e] border border-white/10 rounded-xl p-3 pr-10 text-white text-xs outline-none focus:ring-2 ring-indigo-500" />
+            <button type="button" onclick="window.togglePasswordVisibility('login-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 cursor-pointer">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-auth-login-submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs transition-all cursor-pointer shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span data-hi="लॉगिन करें">Log In / लॉगिन करें</span>
+        </button>
+      </form>
+
+      <p id="auth-footer-prompt" class="text-xs text-center text-gray-400 pt-1">
+        Don't have an account? <button type="button" onclick="window.switchAuthTab('signup')" class="text-indigo-400 hover:underline font-bold cursor-pointer">Sign Up here</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- Google Account Chooser Modal (Shows all Gmail accounts for Sign Up / Sign In) -->
+  <div id="google-account-chooser-modal" onclick="if(event.target === this) window.closeGoogleAccountChooser()" class="fixed inset-0 z-[200] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-[#18181c] border border-white/10 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Top header -->
+      <div class="flex items-center justify-between pb-2 border-b border-white/10">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-white leading-none" data-hi="खाता चुनें">Choose an account</h3>
+            <p class="text-[11px] text-gray-400 mt-1" data-hi="YT Market में जारी रखने के लिए">to continue to YT Market</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.closeGoogleAccountChooser()" class="p-1.5 rounded-full text-gray-400 hover:text-white cursor-pointer hover:bg-white/5" aria-label="Close chooser">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Gmail Accounts List -->
+      <div id="google-accounts-list" class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- Use another account section -->
+      <div class="pt-2 border-t border-white/10 space-y-2">
+        <button type="button" onclick="window.toggleAddGoogleAccountForm()" class="w-full p-2.5 rounded-xl hover:bg-white/5 flex items-center gap-3 text-left transition-colors cursor-pointer group">
+          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300 group-hover:text-white group-hover:bg-indigo-600/30 transition-colors">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-white group-hover:text-indigo-300 transition-colors" data-hi="दूसरा खाता उपयोग करें">Use another account</p>
+            <p class="text-[10px] text-gray-400" data-hi="अपना कोई भी Gmail पता दर्ज करें">Enter any Gmail address</p>
+          </div>
+        </button>
+
+        <!-- Inline Add Account Form -->
+        <form id="google-add-account-form" onsubmit="window.submitCustomGoogleAccount(event)" class="p-3 bg-black/40 rounded-xl border border-white/10 space-y-2.5 hidden">
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-1" data-hi="Google / Gmail पता">Google / Gmail Address:</label>
+            <input type="email" id="custom-google-email" required placeholder="example@gmail.com" class="w-full bg-[#131316] border border-white/10 rounded-lg p-2 text-white text-xs outline-none focus:ring-1 ring-indigo-500" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-1" data-hi="आपका नाम (वैकल्पिक)">Your Name (Optional):</label>
+            <input type="text" id="custom-google-name" placeholder="e.g. Ramesh Kumar" class="w-full bg-[#131316] border border-white/10 rounded-lg p-2 text-white text-xs outline-none focus:ring-1 ring-indigo-500" />
+          </div>
+          <button type="submit" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span data-hi="इस खाते से साइन इन करें">Sign In with this Account</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Native Browser Popup Button -->
+      <div class="pt-1">
+        <button type="button" onclick="window.triggerNativeGooglePopup()" class="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white rounded-xl text-[11px] font-medium flex items-center justify-center gap-2 transition-all cursor-pointer">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span data-hi="Google ब्राउज़र विंडो खोलें">Open Google Sign-in Window</span>
+        </button>
+      </div>
+
+      <p class="text-[10px] text-gray-500 text-center leading-relaxed">
+        To continue, Google will share your name and email with YT Market.
+      </p>
+    </div>
+  </div>
+
+  <!-- Primary Application Script -->
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

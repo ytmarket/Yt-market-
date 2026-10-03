@@ -1,0 +1,26 @@
+{
+  "name": "YT Market - Premium Channels",
+  "short_name": "YT Market",
+  "description": "Verified Marketplace for Monetized YouTube, Instagram and Facebook Assets",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#4f46e5",
+  "gcm_sender_id": "44009226017",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
