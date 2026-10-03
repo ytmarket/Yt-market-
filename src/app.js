@@ -1369,14 +1369,40 @@ window.copyText = (id) => {
 };
 
 window.shareApp = () => {
-  onValue(ref(db, 'settings/shareApkText'), (snapshot) => {
-    const shareText = snapshot.val() || 'Download YT Market app now - Safe Escrow Digital Assets!';
-    if (navigator.share) {
-      navigator.share({ title: 'YT Market', text: shareText }).catch(() => {});
-    } else {
-      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(shareText), '_blank');
+  const referLink = 'https://dazzling-strudel-8ab1bc.netlify.app';
+  const buildShareContent = (dbText) => {
+    let baseText = dbText || 'Download YT Market app now - Safe Escrow Digital Assets!';
+    if (!baseText.includes(referLink)) {
+      return `${baseText}\n\n${referLink}`;
     }
-  }, { onlyOnce: true });
+    return baseText;
+  };
+
+  try {
+    onValue(ref(db, 'settings/shareApkText'), (snapshot) => {
+      const fullText = buildShareContent(snapshot.val());
+      if (navigator.share) {
+        navigator.share({
+          title: 'YT Market',
+          text: fullText,
+          url: referLink
+        }).catch(() => {});
+      } else {
+        window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(fullText), '_blank');
+      }
+    }, { onlyOnce: true });
+  } catch (err) {
+    const fallbackText = buildShareContent(null);
+    if (navigator.share) {
+      navigator.share({
+        title: 'YT Market',
+        text: fallbackText,
+        url: referLink
+      }).catch(() => {});
+    } else {
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(fallbackText), '_blank');
+    }
+  }
 };
 
 // ==========================================
