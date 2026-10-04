@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, onValue, push, set, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { 
@@ -1085,10 +1085,42 @@ function updateProductView() {
   const releaseBtn = document.getElementById('btn-release-payment');
   const releasedBox = document.getElementById('released-success-box');
 
+  const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+  const isExpired = req && (req.status === 'pending') && (Date.now() - (req.timestamp || 0) >= THREE_HOURS_MS);
+
   if (!req) { 
     form?.classList.remove('hidden'); 
     statusCont?.classList.add('hidden'); 
     creds?.classList.add('hidden'); 
+  }
+  else if (req.status === 'invalid' || isExpired) {
+    form?.classList.add('hidden'); 
+    statusCont?.classList.remove('hidden');
+    creds?.classList.add('hidden');
+
+    let invTitle = currentLanguage === 'hi' ? 'Invalid UTR Number (अमान्य यूटीआर नंबर)' : 'Invalid UTR Number';
+    let invSub = currentLanguage === 'hi' 
+      ? 'सत्यापन समय सीमा (3 घंटे) समाप्त हो गई है या यूटीआर अमान्य पाया गया है। कृपया सही 12-अंकीय यूटीआर नंबर पुनः दर्ज करें।' 
+      : 'Verification timed out after 3 hours or UTR number was invalid. Please re-enter a valid 12-digit UTR number.';
+    let retryBtn = currentLanguage === 'hi' ? 'नया यूटीआर नंबर दर्ज करें' : 'Re-enter UTR Number';
+    let supBtn = currentLanguage === 'hi' ? 'सपोर्ट से संपर्क करें' : 'Contact Support';
+
+    statusCont.innerHTML = `
+      <div class="text-rose-500 font-bold text-base flex flex-col items-center gap-2">
+        <div class="p-3 bg-rose-500/10 rounded-full border border-rose-500/30"><i data-lucide="alert-triangle" class="w-8 h-8 text-rose-400"></i></div>
+        <span class="text-lg font-black text-rose-400 tracking-wide">${invTitle}</span>
+      </div>
+      <p class="text-gray-400 text-xs mt-2 max-w-xs mx-auto leading-relaxed">${invSub}</p>
+      <div class="mt-5 flex flex-col sm:flex-row justify-center items-center gap-3">
+        <button onclick="window.retryUtrVerification('${req.id}')" class="text-xs font-bold text-white uppercase tracking-wider py-3 px-6 rounded-xl bg-rose-600 hover:bg-rose-500 transition-all cursor-pointer shadow-lg shadow-rose-600/30 flex items-center gap-2">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <span>${retryBtn}</span>
+        </button>
+        <button onclick="window.open('${telegramLink}', '_blank')" class="text-xs font-bold text-indigo-400 uppercase tracking-wider hover:text-indigo-300 transition-colors cursor-pointer py-3 px-5 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+          ${supBtn}
+        </button>
+      </div>
+    `;
   }
   else if (req.status === 'pending') { 
     form?.classList.add('hidden'); 
@@ -1096,17 +1128,19 @@ function updateProductView() {
     creds?.classList.add('hidden');
 
     let pendTitle = currentLanguage === 'hi' ? 'एस्क्रो सत्यापन लंबित...' : 'Escrow Vault Verification Pending...';
-    let pendSub = currentLanguage === 'hi' ? 'एडमिन टीम भुगतान सत्यापित कर फंड्स को एस्क्रो वॉल्ट में सुरक्षित लॉक कर रही है।' : 'Admin team is verifying payment to secure funds in Escrow Vault.';
+    let pendSub = currentLanguage === 'hi' 
+      ? `एडमिन टीम 12-अंकीय यूटीआर (${req.transactionId || req.utrNumber || ''}) का सत्यापन कर रही है। फंड्स एस्क्रो वॉल्ट में सुरक्षित रहेंगे।` 
+      : `Admin team is verifying 12-digit UTR (${req.transactionId || req.utrNumber || ''}). Funds remain secure in Escrow Vault.`;
     let supBtn = currentLanguage === 'hi' ? 'त्वरित पुष्टि के लिए सपोर्ट से संपर्क करें' : 'Contact Support for Fast Approval';
     
     statusCont.innerHTML = `
       <div class="text-amber-500 font-bold text-base flex flex-col items-center gap-2">
-        <div class="p-3 bg-amber-500/10 rounded-full"><i data-lucide="lock" class="w-8 h-8 animate-pulse"></i></div>
-        <span>${pendTitle}</span>
+        <div class="p-3 bg-amber-500/10 rounded-full border border-amber-500/20"><i data-lucide="clock" class="w-8 h-8 animate-pulse"></i></div>
+        <span class="text-base sm:text-lg font-bold">${pendTitle}</span>
       </div>
-      <p class="text-gray-400 text-xs mt-2 max-w-xs mx-auto">${pendSub}</p>
+      <p class="text-gray-400 text-xs mt-2 max-w-xs mx-auto leading-relaxed">${pendSub}</p>
       <div class="mt-4 flex justify-center gap-3">
-        <button onclick="window.open('${telegramLink}', '_blank')" class="text-xs font-bold text-indigo-400 uppercase tracking-widest hover:text-indigo-300 transition-colors cursor-pointer py-2 px-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+        <button onclick="window.open('${telegramLink}', '_blank')" class="text-xs font-bold text-indigo-400 uppercase tracking-widest hover:text-indigo-300 transition-colors cursor-pointer py-2.5 px-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
           ${supBtn}
         </button>
       </div>
@@ -1154,36 +1188,163 @@ function updateProductView() {
   refreshLucide();
 }
 
+window.validateUtrInput = (val) => {
+  const warnEl = document.getElementById('utr-validation-warning');
+  const textEl = document.getElementById('utr-validation-text');
+  const inputEl = document.getElementById('transaction-id-input');
+  if (!inputEl) return false;
+
+  const trimmed = (val !== undefined ? val : inputEl.value).trim();
+  if (!trimmed) {
+    if (warnEl) warnEl.classList.add('hidden');
+    inputEl.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500/40', 'border-emerald-500', 'ring-emerald-500/30');
+    return false;
+  }
+
+  const hasNonDigits = /[^0-9]/.test(trimmed);
+  const isWrongLength = trimmed.length !== 12;
+
+  if (hasNonDigits || isWrongLength) {
+    if (warnEl) warnEl.classList.remove('hidden');
+    inputEl.classList.add('border-rose-500', 'ring-2', 'ring-rose-500/40');
+    inputEl.classList.remove('border-emerald-500', 'ring-emerald-500/30');
+    if (textEl) {
+      if (hasNonDigits) {
+        textEl.innerText = currentLanguage === 'hi' 
+          ? 'Invalid UTR Number (अमान्य यूटीआर: केवल अंक मान्य हैं, अक्षर या सिंबल नहीं)' 
+          : 'Invalid UTR Number (only numbers allowed, no letters or symbols)';
+      } else {
+        textEl.innerText = currentLanguage === 'hi' 
+          ? `Invalid UTR Number (अमान्य यूटीआर: 12 अंक होने चाहिए, वर्तमान: ${trimmed.length})` 
+          : `Invalid UTR Number (must be exactly 12 digits, currently: ${trimmed.length})`;
+      }
+    }
+    refreshLucide();
+    return false;
+  } else {
+    if (warnEl) warnEl.classList.add('hidden');
+    inputEl.classList.remove('border-rose-500', 'ring-rose-500/40');
+    inputEl.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500/30');
+    return true;
+  }
+};
+
+window.retryUtrVerification = (reqId) => {
+  if (reqId) {
+    remove(ref(db, `payment_requests/${reqId}`)).catch(() => {});
+  }
+  myRequests = myRequests.filter(r => r.id !== reqId);
+  const form = document.getElementById('verification-form-container');
+  const statusCont = document.getElementById('verification-status-container');
+  const inputEl = document.getElementById('transaction-id-input');
+  const warnEl = document.getElementById('utr-validation-warning');
+  if (form) form.classList.remove('hidden');
+  if (statusCont) statusCont.classList.add('hidden');
+  if (inputEl) {
+    inputEl.value = '';
+    inputEl.classList.remove('border-rose-500', 'ring-rose-500/40', 'border-emerald-500', 'ring-emerald-500/30');
+    inputEl.focus();
+  }
+  if (warnEl) warnEl.classList.add('hidden');
+  updateProductView();
+};
+
 // 1. Submit Verification & Lock into Escrow
 window.submitVerification = () => { 
-  const tid = document.getElementById('transaction-id-input')?.value.trim(); 
+  const inputEl = document.getElementById('transaction-id-input');
+  const tid = inputEl?.value.trim() || ''; 
+  const warnEl = document.getElementById('utr-validation-warning');
+  const textEl = document.getElementById('utr-validation-text');
+
   if (!tid) {
-    return window.showAlert(currentLanguage === 'hi' ? 'कृपया लेनदेन (Transaction) आईडी दर्ज करें' : 'Please enter Transaction ID'); 
+    if (inputEl) {
+      inputEl.classList.add('border-rose-500', 'ring-2', 'ring-rose-500/40');
+      inputEl.focus();
+    }
+    if (warnEl) warnEl.classList.remove('hidden');
+    if (textEl) {
+      textEl.innerText = currentLanguage === 'hi' 
+        ? 'Invalid UTR Number (कृपया 12 अंकों का यूटीआर नंबर दर्ज करें)' 
+        : 'Invalid UTR Number (Please enter 12-digit UTR number)';
+    }
+    refreshLucide();
+    return window.showAlert(currentLanguage === 'hi' ? 'Invalid UTR Number (कृपया 12 अंकों का यूटीआर नंबर दर्ज करें)' : 'Invalid UTR Number (Please enter 12-digit UTR number)'); 
   }
   
+  const hasNonDigits = /[^0-9]/.test(tid);
+  const isWrongLength = tid.length !== 12;
+
+  if (hasNonDigits || isWrongLength) {
+    if (inputEl) {
+      inputEl.classList.add('border-rose-500', 'ring-2', 'ring-rose-500/40');
+      inputEl.focus();
+    }
+    if (warnEl) warnEl.classList.remove('hidden');
+    if (textEl) {
+      if (hasNonDigits) {
+        textEl.innerText = currentLanguage === 'hi' 
+          ? 'Invalid UTR Number (अक्षर या सिंबल मान्य नहीं हैं)' 
+          : 'Invalid UTR Number (Letters or symbols not allowed)';
+      } else {
+        textEl.innerText = currentLanguage === 'hi' 
+          ? `Invalid UTR Number (12 अंक होने चाहिए, वर्तमान: ${tid.length})` 
+          : `Invalid UTR Number (Must be exactly 12 digits, currently: ${tid.length})`;
+      }
+    }
+    refreshLucide();
+    return window.showAlert(currentLanguage === 'hi' ? 'Invalid UTR Number (अमान्य यूटीआर नंबर)' : 'Invalid UTR Number');
+  }
+
+  const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
   const req = myRequests.find(r => r.channelId === selectedChannelId);
-  if (req && req.status === 'pending') {
+  if (req && req.status === 'pending' && (Date.now() - (req.timestamp || 0) < THREE_HOURS_MS)) {
     return window.showAlert(currentLanguage === 'hi' ? 'अनुरोध पहले से ही सत्यापन हेतु लंबित है।' : 'Request already pending verification.');
   }
 
   const c = allChannels.find(x => x.id === selectedChannelId); 
+  if (!c) return;
+
   push(ref(db, 'payment_requests'), { 
     userId, 
     channelId: c.id, 
     channelName: c.name, 
     price: c.price,
     transactionId: tid, 
-    status: 'approved', // Immediately activate Escrow Vault for smooth inspection
-    escrowVaultStatus: 'locked',
-    approvedTimestamp: Date.now(),
+    utrNumber: tid,
+    status: 'pending', // Shows pending on submit
+    escrowVaultStatus: 'pending_verification',
     timestamp: Date.now() 
   }).then(() => { 
-    document.getElementById('transaction-id-input').value = ''; 
-    window.showAlert(currentLanguage === 'hi' ? 'भुगतान सत्यापित! फंड्स एस्क्रो वॉल्ट में सुरक्षित लॉक कर दिए गए हैं।' : 'Payment verified! Funds safely locked in Escrow Vault.'); 
+    if (inputEl) {
+      inputEl.value = ''; 
+      inputEl.classList.remove('border-rose-500', 'ring-rose-500/40', 'border-emerald-500', 'ring-emerald-500/30');
+    }
+    if (warnEl) warnEl.classList.add('hidden');
+    window.showAlert(currentLanguage === 'hi' ? 'यूटीआर नंबर सबमिट किया गया! सत्यापन लंबित (Pending) है।' : 'UTR Number submitted! Verification Pending.'); 
+    updateProductView();
   }).catch(() => {
     window.showAlert('Error recording transaction. Please retry.');
   }); 
 };
+
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.id === 'transaction-id-input') {
+    window.validateUtrInput(e.target.value);
+  }
+});
+
+setInterval(() => {
+  if (selectedChannelId && document.getElementById('product-view') && !document.getElementById('product-view').classList.contains('hidden')) {
+    const c = allChannels.find(x => x.id === selectedChannelId);
+    const req = myRequests.find(r => r.channelId === c?.id);
+    if (req && req.status === 'pending') {
+      const elapsed = Date.now() - (req.timestamp || 0);
+      if (elapsed >= 3 * 60 * 60 * 1000) {
+        updateProductView();
+      }
+    }
+  }
+}, 15000);
 
 // 2. Step 4: Confirmation & Fund Release Action
 window.confirmAndReleasePayment = () => {
